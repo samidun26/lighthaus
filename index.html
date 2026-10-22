@@ -1,0 +1,1475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Greywater Light</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&display=swap">
+<style>
+/* Layout: one full-bleed night scene; chart-label instruments pinned to the corners; sheets rise from the bottom like a chart-table drawer */
+:root{
+  --night:#060b0e;
+  --ink:#dce4e1;
+  --fog:#8ea4a6;
+  --dim:#5f7476;
+  --lamp:#f0c46c;
+  --lit:#7fd3a2;
+  --flare:#e2614b;
+  --brass:#b49764;
+  --sheet:#0a1216f2;
+  --line:#b4976438;
+  --paper:#ccd4ce;
+  --paper-ink:#1a262a;
+  --display:"IM Fell English SC","IM Fell English",Georgia,serif;
+  --serif:"IM Fell English",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;background:var(--night);color:var(--ink);font:13px/1.5 var(--mono);overflow:hidden;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+#sea{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+body[data-mode="watch"] #sea{cursor:crosshair}
+
+button{font:inherit;color:inherit;cursor:pointer;background:color-mix(in srgb,var(--night) 75%,transparent);border:1px solid var(--line);border-radius:3px;padding:8px 12px;transition:border-color .2s,background .2s,color .2s}
+button:hover:not(:disabled){border-color:var(--brass)}
+button:focus-visible,input:focus-visible,summary:focus-visible,.cell:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+button:disabled{opacity:.42;cursor:not-allowed}
+button.primary{background:color-mix(in srgb,var(--lamp) 14%,var(--night));border-color:color-mix(in srgb,var(--lamp) 60%,transparent);color:color-mix(in srgb,var(--lamp) 55%,white)}
+button.primary:hover:not(:disabled){border-color:var(--lamp);background:color-mix(in srgb,var(--lamp) 22%,var(--night))}
+button.ghost{background:none;border-color:transparent;color:var(--fog);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--line)}
+button.ghost:hover{color:var(--ink)}
+
+.hud{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;z-index:1;
+  padding-top:calc(14px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hud button,.hud summary{pointer-events:auto}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.chart{font-size:10.5px;letter-spacing:.1em;color:var(--fog);line-height:1.65;text-transform:uppercase;text-shadow:0 1px 8px #000}
+.chart b{display:block;font:400 16px/1.2 var(--display);letter-spacing:.14em;color:var(--ink);font-weight:400}
+.chart .moon{color:var(--dim)}
+.tr{display:flex;gap:6px;align-items:center;margin-left:auto}
+.oil{display:flex;align-items:center;gap:6px;height:34px;box-sizing:border-box;padding:0 10px;border:1px solid var(--line);border-radius:3px;background:color-mix(in srgb,var(--night) 70%,transparent);font-variant-numeric:tabular-nums;white-space:nowrap}
+.oil b{font-weight:500;color:var(--lamp)}
+.oil svg{color:var(--lamp)}
+.icon{width:34px;height:34px;padding:0;display:grid;place-items:center}
+
+.title{position:fixed;left:min(26%,calc(100vw - 600px));right:0;top:24%;text-align:center;pointer-events:none;padding-inline:16px;z-index:1}
+.title h1{font:400 clamp(34px,6vw,84px)/1 var(--display);letter-spacing:.16em;margin:0;color:var(--ink);text-shadow:0 0 50px #000,0 0 14px #000;text-wrap:balance}
+.title p{font:italic 400 clamp(16px,2.1vw,22px)/1.4 var(--serif);color:var(--fog);margin:.7em 0 0;text-shadow:0 0 18px #000}
+
+.dock{display:flex;gap:10px;justify-content:center}
+.dock button{position:relative;flex:0 1 230px;min-width:0;text-align:left;padding:12px 16px;display:grid;gap:3px;backdrop-filter:blur(4px)}
+.dock button span{font:400 19px/1.15 var(--display);letter-spacing:.06em}
+.dock button small{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fog)}
+.badge{position:absolute;top:9px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--lamp);box-shadow:0 0 10px var(--lamp)}
+
+.focus-hud{position:fixed;left:0;right:0;bottom:calc(30px + env(safe-area-inset-bottom,0px));display:grid;justify-items:center;gap:6px;text-align:center;pointer-events:none;z-index:1;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.focus-hud button{pointer-events:auto}
+.fh-label{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--fog);text-shadow:0 0 10px #000}
+.fh-task{font:italic 21px/1.3 var(--serif);max-width:34ch;text-wrap:balance;text-shadow:0 0 16px #000;overflow-wrap:anywhere}
+.fh-time{font:300 clamp(56px,10vw,104px)/1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em;text-shadow:0 0 40px #000c}
+.fh-bar{width:min(340px,72vw);height:2px;background:#ffffff1c;position:relative;margin:4px 0 6px}
+.fh-bar i{position:absolute;inset:0 auto 0 0;background:var(--lamp);box-shadow:0 0 8px var(--lamp)}
+.fh-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;min-height:38px}
+.fh-act .q{font:italic 16px var(--serif);color:var(--ink);text-shadow:0 0 10px #000}
+
+.wh-info{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);text-align:center;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--fog);text-shadow:0 1px 8px #000;white-space:nowrap;z-index:1}
+.wh-info .score{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:4px;color:var(--ink);font-size:13px;letter-spacing:.06em;text-transform:none}
+.hulls{display:flex;gap:4px}
+.hulls svg{width:22px;height:11px;fill:var(--ink)}
+.hulls svg.lost{fill:var(--flare);opacity:.55}
+.leave{position:fixed;left:max(10px,env(safe-area-inset-left,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:1}
+.horn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));width:84px;height:84px;border-radius:50%;padding:0;display:grid;place-content:center;gap:1px;text-align:center;z-index:1;--p:1;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--night) 88%,transparent) 88%,transparent 89%),conic-gradient(var(--lamp) calc(var(--p)*1turn),#ffffff18 0);border:0}
+.horn span{font:400 14px/1 var(--display);letter-spacing:.06em}
+.horn small{font-size:9px;letter-spacing:.14em;color:var(--fog);text-transform:uppercase}
+.horn.cooling span{color:var(--dim)}
+.hint{position:fixed;left:50%;bottom:calc(122px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(520px,calc(100vw - 32px));box-sizing:border-box;margin:0;text-align:center;font:italic 17px/1.45 var(--serif);color:var(--ink);text-shadow:0 0 12px #000,0 0 4px #000;opacity:0;transition:opacity 1.2s;pointer-events:none;z-index:1}
+.hint.show{opacity:1}
+
+.toast{position:fixed;left:50%;top:calc(86px + env(safe-area-inset-top,0px));transform:translateX(-50%);max-width:calc(100vw - 32px);box-sizing:border-box;padding:9px 16px;background:var(--sheet);border:1px solid var(--line);border-radius:3px;font:italic 16px/1.35 var(--serif);text-align:center;opacity:0;transition:opacity .5s;pointer-events:none;z-index:8}
+.toast.show{opacity:1}
+
+.sheet-wrap{position:fixed;inset:0;z-index:5;display:flex;align-items:flex-end;justify-content:center;background:#02060899;backdrop-filter:blur(3px)}
+.sheet{position:relative;box-sizing:border-box;width:min(640px,100%);max-height:min(88vh,100%);overflow:auto;overscroll-behavior:contain;background:var(--sheet);border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;box-shadow:0 -30px 80px #000c;animation:rise .45s cubic-bezier(.2,.8,.2,1);
+  padding-top:24px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));padding-left:max(22px,env(safe-area-inset-left,0px));padding-right:max(22px,env(safe-area-inset-right,0px))}
+.sheet.wide{width:min(760px,100%);height:min(88vh,100%)}
+@keyframes rise{from{transform:translateY(40px);opacity:0}}
+.close{position:absolute;top:14px;right:max(14px,env(safe-area-inset-right,0px));width:34px;height:34px;padding:0;font-size:20px;line-height:1;color:var(--fog)}
+.eyebrow{margin:0 0 6px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass)}
+.sheet h2{margin:0 44px 8px 0;font:400 28px/1.1 var(--display);letter-spacing:.07em;text-wrap:balance}
+.lede{margin:0 0 20px;font:400 17px/1.5 var(--serif);color:#b8c5c3;max-width:58ch}
+.label,label{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--fog);margin:0 0 7px}
+input[type=text]{width:100%;box-sizing:border-box;background:#03070a;border:1px solid var(--line);border-radius:3px;color:var(--ink);font:italic 19px/1.3 var(--serif);padding:11px 13px}
+input[type=text]::placeholder{color:var(--dim)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.field+.field{margin-top:18px}
+.chips button[aria-pressed="true"]{border-color:var(--lamp);color:var(--lamp);background:color-mix(in srgb,var(--lamp) 10%,var(--night))}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end;margin-top:22px}
+.row .grow{flex:1 1 220px;min-width:0;margin:0}
+.est{font-size:11.5px;color:var(--fog)}
+.est b{color:var(--lamp);font-weight:500}
+
+.tally{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0;padding:16px 0;border-block:1px solid var(--line)}
+.tally div,.stats div{min-width:0}
+.tally dt,.stats dt{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fog)}
+.tally dd,.stats dd{margin:3px 0 0;font:400 22px/1.15 var(--mono);font-variant-numeric:tabular-nums}
+.unlock{margin-top:16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--paper);color:var(--paper-ink);padding:12px 14px;border-radius:2px;font:italic 16px/1.4 var(--serif)}
+.unlock button{border-color:#1a262a55;color:var(--paper-ink);background:#ffffff40}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:14px 0 18px;overflow-x:auto}
+.tabs button{position:relative;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;padding:9px 12px;color:var(--fog);white-space:nowrap;font:400 16px/1.2 var(--display);letter-spacing:.05em}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--lamp)}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--lamp);margin-left:6px;vertical-align:middle}
+.oilline{margin:0 0 4px;color:var(--fog)}
+.oilline b{color:var(--lamp);font-weight:500}
+.upg{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;align-items:center;padding:14px 0;border-top:1px solid #ffffff0f}
+.upg h3{margin:0;font:400 11px/1.3 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--fog)}
+.upg .cur{font:italic 19px/1.25 var(--serif);margin:2px 0 6px}
+.upg .next{font-size:11.5px;color:var(--fog);margin:6px 0 0}
+.pips{display:flex;gap:3px}
+.pips i{width:16px;height:3px;background:#ffffff1f}
+.pips i.on{background:var(--lamp)}
+.sub{margin:26px 0 8px;font:400 18px/1.2 var(--display);letter-spacing:.06em}
+p.note{font-size:11.5px;color:var(--fog);margin:0 0 10px;max-width:60ch}
+
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 12px;margin:0}
+.chartbox{position:relative;margin-top:6px}
+.bars{position:relative;display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:2px;height:96px;border-bottom:1px solid #ffffff26}
+.bars .max{position:absolute;left:0;right:0;top:0;border-top:1px dashed #ffffff1f;pointer-events:none}
+.bars .max span{position:absolute;right:0;top:-16px;font-size:9.5px;color:var(--dim)}
+.cell{display:flex;align-items:flex-end;justify-content:center;height:100%;cursor:default;border-radius:2px}
+.cell:hover{background:#ffffff08}
+.cell i{display:block;width:62%;border-radius:4px 4px 0 0;background:color-mix(in srgb,var(--lamp) 50%,var(--night))}
+.cell.today i{background:var(--lamp)}
+.xlab{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:2px;margin-top:5px;font-size:9.5px;color:var(--dim);text-align:center}
+.tip{position:absolute;top:-6px;transform:translate(-50%,-100%);padding:5px 9px;background:#03070a;border:1px solid var(--line);border-radius:3px;font-size:11px;white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
+.loglist{list-style:none;margin:0;padding:0}
+.loglist li{display:grid;grid-template-columns:9.5em 5em minmax(0,1fr);gap:12px;padding:9px 0;border-top:1px solid #ffffff0f;font-size:11.5px;color:var(--fog);align-items:baseline}
+.loglist .len{color:var(--ink);font-variant-numeric:tabular-nums}
+.loglist .len.ab{color:var(--flare)}
+.loglist .task{font:italic 16px/1.3 var(--serif);color:var(--ink);overflow-wrap:anywhere}
+.empty{font:italic 16px/1.5 var(--serif);color:var(--fog);margin:6px 0}
+.sync{margin:22px 0 0;font-size:10.5px;color:var(--dim)}
+
+.pages{display:grid;gap:10px}
+.page{background:var(--paper);color:var(--paper-ink);border-radius:2px;box-shadow:0 2px 0 #00000040}
+.page summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:13px 16px;font:400 18px/1.25 var(--display);letter-spacing:.04em}
+.page summary::-webkit-details-marker{display:none}
+.page summary::after{content:"+";font:400 16px var(--mono);color:#1a262a88}
+.page[open] summary::after{content:"\2212"}
+.page .new{margin-left:auto;font:500 9.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#8a3b2a}
+.page .body{padding:0 18px 18px;font:400 18px/1.6 var(--serif);max-width:60ch}
+.page .body p{margin:0 0 .75em}
+.page .sig{font-style:italic;text-align:right;margin:0}
+.page.locked{background:none;border:1px dashed var(--line);color:var(--dim);padding:12px 16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;font-size:11px;box-shadow:none}
+.page.locked span:first-child{font:italic 16px var(--serif);color:var(--fog)}
+
+.bottom{display:grid;gap:10px;justify-items:center}
+.invite{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;box-sizing:border-box;width:min(700px,100%);padding:9px 10px 9px 14px;background:color-mix(in srgb,var(--night) 82%,transparent);border:1px solid color-mix(in srgb,var(--lit) 45%,transparent);border-radius:3px;backdrop-filter:blur(4px);pointer-events:auto}
+.invite p{margin:0;flex:1 1 240px;min-width:0;font:italic 16px/1.35 var(--serif)}
+.invite p small{display:block;font:400 10px/1.6 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--fog)}
+.invite i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--lit);box-shadow:0 0 8px var(--lit);margin-right:8px;vertical-align:middle}
+.keepers{display:flex;gap:4px 12px;justify-content:center;flex-wrap:wrap;margin-top:6px;font-size:11px;letter-spacing:.03em;text-transform:none;color:var(--fog);white-space:normal;max-width:min(520px,90vw)}
+.keepers span{white-space:nowrap}
+.keepers i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+@media (max-width:560px){
+  .dock{gap:6px}
+  .dock button{flex:1 1 0;padding:11px 10px}
+  .dock button span{font-size:15px}
+  .dock button small{display:none}
+  .title{top:18%;left:0}
+  .chart{font-size:9.5px;letter-spacing:.08em;white-space:nowrap}
+  .chart b{font-size:14px}
+  #btnFull{display:none}
+  .tabs button{padding:9px 7px;font-size:15px}
+  .fh-task{font-size:18px}
+  body[data-mode="watch"] .chart{display:none}
+  .wh-info{left:max(16px,env(safe-area-inset-left,0px));transform:none;text-align:left;font-size:10px}
+  .wh-info .score,.keepers{justify-content:flex-start}
+  .horn small{display:none}
+  .hint{bottom:calc(118px + env(safe-area-inset-bottom,0px));font-size:15.5px}
+  .tally{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .loglist li{grid-template-columns:7.5em 4.2em minmax(0,1fr);gap:8px}
+  .sheet h2{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}.hint,.toast{transition:none}}
+</style>
+
+<canvas id="sea" aria-label="A lighthouse on a rock at night. Its beam sweeps a foggy sea where ships come in."></canvas>
+
+<div class="hud">
+  <header class="top">
+    <div class="chart" aria-label="Chart notes">
+      <b>Greywater Lt.</b>
+      <div id="charText">Fl(2) W 10s 34m 10M</div>
+      <div id="realWatch">Forenoon watch</div>
+      <div class="moon" id="moonText"></div>
+    </div>
+    <div class="tr">
+      <div class="oil" title="Lamp oil in the store"><svg width="12" height="15" viewBox="0 0 12 15" aria-hidden="true"><path fill="currentColor" d="M6 0C8.4 3.8 11 6.6 11 9.5a5 5 0 0 1-10 0C1 6.6 3.6 3.8 6 0z"/></svg><b id="oilN">20</b> gal</div>
+      <button class="icon" id="btnSound" aria-label="Turn sound off"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path id="sndOn" d="M16 9.5a3.5 3.5 0 0 1 0 5M18.6 7a7 7 0 0 1 0 10"/><path id="sndOff" d="M16.5 9.5l5 5m0-5l-5 5" style="display:none"/></svg></button>
+      <button class="icon" id="btnFull" aria-label="Full screen"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+  </header>
+  <div class="bottom">
+    <div class="invite" id="invite" role="status" hidden><p><small><i></i>Night watch open</small><span id="inviteText"></span></p><button class="primary" id="btnJoin">Join the watch</button></div>
+    <nav class="dock" id="dock" aria-label="What to do">
+      <button id="btnFocus" class="primary"><span>Keep the lamp</span><small>Focus timer</small></button>
+      <button id="btnWatch"><span>Night watch</span><small>Guide the ships</small></button>
+      <button id="btnKeep"><span>The keep</span><small>Upgrades, log, pages</small><i class="badge" id="keepBadge" hidden></i></button>
+    </nav>
+  </div>
+</div>
+
+<section class="title" id="title">
+  <h1>Greywater Light</h1>
+  <p>Keep the lamp. Bring them home.</p>
+</section>
+
+<section class="focus-hud" id="focusHud" hidden>
+  <div class="fh-label" id="fhLabel">Keeping the lamp</div>
+  <div class="fh-task" id="fhTask"></div>
+  <div class="fh-time" id="fhTime" role="timer">25:00</div>
+  <div class="fh-bar"><i id="fhBar"></i></div>
+  <div class="fh-act" id="fhAct"></div>
+</section>
+
+<section id="watchHud" hidden>
+  <div class="wh-info"><div id="whClock">First watch · 8 bells · 20:00</div><div class="score"><span id="whScore">0 brought in</span><span class="hulls" id="whHulls"></span></div><div class="keepers" id="whKeepers"></div></div>
+  <button id="btnLeave" class="ghost leave">Leave the watch</button>
+  <button id="btnHorn" class="horn" aria-label="Sound the foghorn"><span>Foghorn</span><small>Space</small></button>
+  <p class="hint" id="whHint">Aim the light with your mouse or finger. Hold it on each ship until her lamp turns green, before she reaches the reef. In fog, listen for her bell.</p>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="sheet-wrap" id="sheetFocus" hidden>
+  <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="focusH">
+    <button class="close" data-close aria-label="Close">×</button>
+    <p class="eyebrow">Focus timer</p>
+    <h2 id="focusH">Keep the lamp</h2>
+    <p class="lede">Pick a length and get to work. The light keeps itself while you do, ships come in on it, and the time goes into your log. It runs on the real clock, so you can switch tabs or close this page and come back.</p>
+    <div class="field">
+      <label for="task">What are you keeping watch over?</label>
+      <input id="task" type="text" list="recentTasks" maxlength="80" autocomplete="off" placeholder="Draft the quarterly report">
+      <datalist id="recentTasks"></datalist>
+    </div>
+    <div class="field">
+      <div class="label" id="durLabel">Length of the watch</div>
+      <div class="chips" role="group" aria-labelledby="durLabel" id="durChips">
+        <button data-min="15">15 min</button><button data-min="25">25 min</button><button data-min="45">45 min</button><button data-min="60">1 hour</button><button data-min="90">90 min</button>
+      </div>
+    </div>
+    <div class="row"><p class="est grow" id="focusEst"></p><button class="primary" id="btnLight">Light the lamp</button></div>
+  </section>
+</div>
+
+<div class="sheet-wrap" id="sheetDone" hidden>
+  <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="doneH">
+    <p class="eyebrow" id="doneEye">Eight bells</p>
+    <h2 id="doneH">The watch is kept</h2>
+    <p class="lede" id="doneText"></p>
+    <dl class="tally" id="doneTally"></dl>
+    <div class="unlock" id="doneUnlock" hidden></div>
+    <div class="row"><button id="btnRest">Rest 5 minutes</button><button id="btnBreakWatch">Night watch</button><button class="primary" data-close>Back to the light</button></div>
+  </section>
+</div>
+
+<div class="sheet-wrap" id="sheetEnd" hidden>
+  <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="endH">
+    <p class="eyebrow" id="endEye">Morning watch</p>
+    <h2 id="endH">Dawn</h2>
+    <p class="lede" id="endText"></p>
+    <dl class="tally" id="endTally"></dl>
+    <div class="unlock" id="endUnlock" hidden></div>
+    <div class="row"><button data-close>Back to the light</button><button class="primary" id="btnAgain">Another night</button></div>
+  </section>
+</div>
+
+<div class="sheet-wrap" id="sheetKeep" hidden>
+  <section class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="keepH">
+    <button class="close" data-close aria-label="Close">×</button>
+    <p class="eyebrow">Greywater Light</p>
+    <h2 id="keepH">The keep</h2>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-lamp" aria-controls="pane-lamp" aria-selected="true">Lamp room</button>
+      <button role="tab" id="tab-log" aria-controls="pane-log" aria-selected="false">Keeper's log</button>
+      <button role="tab" id="tab-pages" aria-controls="pane-pages" aria-selected="false">Marr's pages<i class="dot" id="pagesDot" hidden></i></button>
+    </div>
+    <div role="tabpanel" id="pane-lamp" aria-labelledby="tab-lamp"></div>
+    <div role="tabpanel" id="pane-log" aria-labelledby="tab-log" hidden></div>
+    <div role="tabpanel" id="pane-pages" aria-labelledby="tab-pages" hidden></div>
+    <p class="sync" id="syncNote"></p>
+  </section>
+</div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const TAU=Math.PI*2, D2R=Math.PI/180, LIM=82*D2R;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v, lerp=(a,b,t)=>a+(b-a)*t;
+const rnd=(a,b)=>b===undefined?Math.random()*a:a+Math.random()*(b-a), pick=a=>a[Math.random()*a.length|0];
+const smooth=t=>(t=clamp(t,0,1),t*t*(3-2*t));
+const angDiff=(a,b)=>{let d=(a-b)%TAU;if(d>Math.PI)d-=TAU;if(d<-Math.PI)d+=TAU;return d};
+const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const rgba=(c,a)=>`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${clamp(a,0,1).toFixed(3)})`;
+const mix=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+const pad=n=>String(n).padStart(2,'0');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---------- the light and its fittings ----------
+const beamHalf=l=>(5+l*1.7)*D2R, rangeU=l=>560+l*88, rangeNM=l=>10+l*2;
+const fillRate=l=>.5+l*.16, turnRate=l=>(65+l*28)*D2R;
+const hornCD=l=>16-l*3, hornHold=l=>3+l, shipOil=l=>3+l*2;
+const UP={
+  lens:{name:'Lens',lv:['Sixth-order lens','Fifth-order lens','Fourth-order lens','Third-order lens','Second-order lens','First-order lens'],cost:[40,90,180,320,520],
+    fx:l=>`Beam ${Math.round(beamHalf(l)/D2R*2)}° wide, seen ${rangeNM(l)} miles out.`},
+  fuel:{name:'Illuminant',lv:['Whale oil','Colza oil','Lard oil','Kerosene','Oil-vapour mantle','Electric arc'],cost:[50,110,210,360,600],
+    fx:l=>`Ships answer the light ${Math.round(fillRate(l)/fillRate(0)*100)}% as fast. The flame burns ${['amber','gold','pale gold','straw','white','blue-white'][l]}.`},
+  clock:{name:'Clockwork',lv:['Hand crank','Weight drive','Mercury float','Geared motor','Governor drive'],cost:[30,80,160,300],
+    fx:l=>`The lens turns ${Math.round(turnRate(l)/D2R)}° a second.`},
+  horn:{name:'Fog signal',lv:['Hand horn','Fog bell','Reed horn','Diaphone'],cost:[60,150,330],
+    fx:l=>`Holds ships back ${hornHold(l)}s and lights them up, ready every ${hornCD(l)}s.`},
+  harbor:{name:'Harbour',lv:['Timber jetty','Stone pier','Breakwater','Harbour lights'],cost:[70,200,420],
+    fx:l=>`${shipOil(l)} gal of oil for each ship brought in.`},
+};
+const FUEL_COL=['#efb15a','#f1c06a','#f2cc84','#f4daa2','#f2e8cf','#e2ecff'];
+const COMFORT={
+  stove:{name:'Iron stove',cost:25,fx:'Smoke from the chimney and a lit window at the foot of the tower.'},
+  cat:{name:'A cat',cost:45,fx:'She sleeps on the gallery rail. Nobody knows where she came from.'},
+  gram:{name:'Gramophone',cost:120,fx:'A slow melody drifts out over the water.'},
+};
+const CHARS=[
+  {id:'Fl W 5s',n:1,p:5,desc:'One white flash every 5 seconds.'},
+  {id:'Fl(2) W 10s',n:2,p:10,desc:'Two white flashes every 10 seconds. Greywater\'s own signature.'},
+  {id:'Fl(3) W 15s',n:3,p:15,desc:'Three white flashes every 15 seconds.'},
+  {id:'F W',n:0,p:0,desc:'A fixed white light. No sweep, no flash.'},
+];
+const charOf=()=>CHARS.find(c=>c.id===S.char)||CHARS[1];
+
+const SHIP={
+  smack:{label:'Smack',speed:34,need:.8,mul:1,bell:1568,top:[.5,15]},
+  barque:{label:'Barque',speed:27,need:1.25,mul:1.5,bell:1047,top:[7,22]},
+  steamer:{label:'Steamer',speed:23,need:1.8,mul:2.5,bell:784,top:[10,16]},
+  ghost:{label:'',speed:15,need:4.2,mul:0,bell:311,top:[0,25]},
+};
+const SHIP_SCALE=1.7, TYPES=['smack','barque','steamer','ghost'], STATES=['sail','dock','fade','sink'];
+const NAMES=['Hesper','Ellen Vane','Morning Star','Kittiwake','Saint Brendan','Isabel Grey','Fair Maid','Halcyon','Northern Belle','Thistle','Peregrine','Mary Ann Cole','Gannet','Silver Darling','Providence','Wren','Arbroath Lass','Ocean Child','Selkie','Brightwater','Lady Kinnaird','Fulmar','Mercy','Hope of Wick','Tern','Calder','Grace Darling','Annie Jane','Bonnie Kate','Pilgrim'];
+const PORTS=['Leith','Aberdeen','Wick','Bergen','Stavanger','Hull','Lerwick','Peterhead','Dundee','Kirkwall','Esbjerg','Stornoway','Tórshavn','Montrose'];
+
+// ---------- Marr's pages ----------
+const PAGES=[
+  {t:'To the keeper after me',need:null,sig:'E. Marr, Principal Keeper',body:[
+    'If you are reading this, the Board has sent someone at last.',
+    'The lamp wants trimming every four hours and the clockwork winding every two. Keep the glass clean. Keep the log honest. Write down the oil you burn and the ships you see, even when there is nobody to read it.',
+    'They will come whether you are ready or not, and they will not know your name. They only need to see the light.']},
+  {t:'The first watch is the longest',need:{sessions:1},sig:'E.M., October 1860',body:[
+    'Nobody tells you how loud the quiet is. My first winter I kept every lamp in the house burning, as if the dark were something I could argue with.',
+    'It passes. You learn the work instead of the hours. Trim, wind, polish, write. The hours look after themselves when your hands are busy.']},
+  {t:'On the matter of bells',need:{ships:10},sig:'E.M.',body:[
+    'In fog a ship rings her bell so others know she is there. Close your eyes and you can tell which side she is on, and whether she is near or far, by how the sound comes to you.',
+    'I have saved more ships with my ears than with the lamp. Listen first. Then turn the light to where the bell is.']},
+  {t:'Oil',need:{min:60},sig:'E.M., March 1871',body:[
+    'The supply boat is nine days late. I have put the house on one candle and the lamp on half a wick.',
+    'Whale oil smells of the animal it came from, if you let yourself think about it. I try not to. Every gallon is a night, and every night is somebody\'s father coming home.']},
+  {t:'Fourteenth of November, 1862',need:{ships:40},sig:'E.M.',body:[
+    'The barque Marguerite cleared Leith on the ninth with timber for Bergen. My brother Tobias was her second mate. He was twenty-three.',
+    'She was seen off Greywater at dusk on the fourteenth. The light was lit. I lit it myself and kept it all night, and the inquiry said so, and they were kind about it.',
+    'She never made Bergen. Nothing came ashore. Not a spar.']},
+  {t:'What the lamp asks',need:{min:120},sig:'E.M.',body:[
+    'The lamp does not ask to be loved. It asks to be kept. There is a great freedom in that, once you stop resenting it.',
+    'You do the small thing properly, and then you do it again, and somewhere out in the dark a man you will never meet decides not to turn for the rocks.']},
+  {t:'Dawn',need:{dawns:1},sig:'E.M.',body:[
+    'Storm all night from the north-east. I did not leave the lantern room. At first light I counted eleven sail at anchor in the lee of the island, and every one of them had come in on my light.',
+    'I went down and slept on the kitchen floor like a dog, and it was the best sleep of my life.']},
+  {t:'A pale sail',need:{min:180},sig:'E.M., November 1889',body:[
+    'Fog last night, thick as wool. Near the middle watch I saw a barque standing in from the north with no lantern lit and no bell rung.',
+    'Three masts. A patched fore-course. I know that patch. I watched my brother sew it on the quay at Leith.',
+    'If you see her, hold the light on her. Hold it longer than you think you should.']},
+  {t:'I held the light on her',need:{marg:1},sig:'E.M.',body:[
+    'She came again. I put the beam on her and kept it there, and she grew clearer the way a face does when you are waking up.',
+    'There was a man at the rail. He lifted his hand. Then the fog closed and I was alone with the clockwork, ticking.']},
+  {t:'Letter to the Board, not sent',need:{ships:120},sig:'(crossed through)',body:[
+    'Gentlemen. I am sixty-one years of age and have kept Greywater Light for twenty-nine years without a night\'s relief. I respectfully request that an assistant keeper be appointed, and',
+    'No. If they send someone, he will want to know why I keep the jetty lamp lit, and I will not be able to tell him.']},
+  {t:'Columns',need:{min:420},sig:'E.M.',body:[
+    'I have been reading back through the logs. Date, wind, weather, oil burned, vessels sighted. Thirty years of columns.',
+    'It looks like nothing. It is the whole of a life, written one line at a time, and every line was a night somebody got home. I would not trade it.']},
+  {t:'She is closer each time',need:{marg:2},sig:'E.M.',body:[
+    'Each time I light her she comes nearer before she fades. Last night I could read the name on her stern.',
+    'I have begun to leave a lantern on the end of the jetty, and a line coiled ready, the way you would for any ship that is expected.']},
+  {t:'The boatman',need:{dawns:3},sig:'E.M.',body:[
+    'Hendry brought the oil today and stayed for his tea. He asked who I had been talking to on the jetty when he came round the point.',
+    'I told him I talk to the gulls. He laughed. He did not believe me, and he was right not to.']},
+  {t:'Instructions, revised',need:{min:900},sig:'E.M.',body:[
+    'For whoever comes after. Trim the wick square. Wind the clock before you need to. Do not count the hours; count the ships.',
+    'When the fog comes in, listen for the bells. When you are tired, keep going a little longer. When you cannot, rest, and then come back. The light forgives a great deal, as long as you come back.']},
+  {t:'Last entry',need:{marg:3},sig:'Elias Marr',body:[
+    'She came in tonight. Tide at the full. I have trimmed the lamp and wound the clock and written the oil in the book.',
+    'I am going down to take her line.',
+    'Keep the light. Not for me, and not for him. For whoever is out there tonight who does not know your name.']},
+  {t:'In another hand',need:{marg:3,min:1200},sig:'The keeper',body:[
+    'Keeper\'s note. I have kept this light long enough now to stop reading Marr\'s pages as a story.',
+    'The Marguerite has not been seen since. But some nights, in thick weather, I hear two bells out past the reef, close together, ringing in time. Then the fog lifts and the sea is empty and the jetty lamp is burning, though I do not remember lighting it.']},
+];
+const met=need=>!need||Object.entries(need).every(([k,v])=>(S.st[k]||0)>=v);
+const openPages=()=>PAGES.map((p,i)=>met(p.need)?i:-1).filter(i=>i>=0);
+const newPages=before=>openPages().filter(i=>!before.includes(i));
+function needText(n){
+  return Object.entries(n).map(([k,v])=>{const h=Math.min(S.st[k]||0,v);switch(k){
+    case 'min':return `Keep the lamp for ${hm(v)} in all (${hm(h)} so far)`;
+    case 'sessions':return 'Keep one full watch with the lamp';
+    case 'ships':return `Bring in ${v} ships (${h} so far)`;
+    case 'dawns':return v===1?'See the dawn on night watch':`See ${v} dawns on night watch (${h} so far)`;
+    case 'marg':return `Hold the light on the pale barque (${h} of ${v})`;
+  }}).join(', and ');
+}
+
+// ---------- time ----------
+function shipTime(d=new Date()){
+  const m=d.getHours()*60+d.getMinutes();
+  const name=m<240?'Middle':m<480?'Morning':m<720?'Forenoon':m<960?'Afternoon':m<1080?'First dog':m<1200?'Last dog':'First';
+  return {name,bells:Math.floor(m/30)%8||8};
+}
+function moonPhase(d=new Date()){const syn=29.530588853,days=(d.getTime()-Date.UTC(2000,0,6,18,14))/864e5;return ((days%syn)+syn)%syn/syn}
+const moonName=p=>['New moon','Waxing crescent','First quarter moon','Waxing gibbous moon','Full moon','Waning gibbous moon','Last quarter moon','Waning crescent'][Math.round(p*8)%8];
+const dayKey=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+const hm=m=>m<60?`${m}m`:`${Math.floor(m/60)}h ${pad(m%60)}m`;
+const clock=d=>`${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const dayLabel=d=>d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
+function streak(log,now=new Date()){
+  const days=new Set(log.filter(l=>l.done).map(l=>dayKey(new Date(l.t))));
+  const d=new Date(now);d.setHours(12,0,0,0);let n=0;
+  if(!days.has(dayKey(d)))d.setDate(d.getDate()-1);
+  while(days.has(dayKey(d))){n++;d.setDate(d.getDate()-1)}
+  return n;
+}
+const focusOil=(min,done)=>Math.round(min*4*(done?1:.5))+(done?10:0);
+const focusShips=min=>Math.floor(min/2.5);
+
+// ---------- save: browser first, then the viewer's private db doc ----------
+const KEY='greywater.v1';
+const fresh=()=>({v:1,at:0,oil:20,up:{lens:0,fuel:0,clock:0,horn:0,harbor:0},cf:{},char:'Fl(2) W 10s',dur:25,st:{min:0,sessions:0,ships:0,nights:0,dawns:0,best:0,marg:0},log:[],seen:[],active:null});
+function adopt(r){const f=fresh(),c=JSON.parse(JSON.stringify(r||{}));return {...f,...c,up:{...f.up,...c.up},cf:{...c.cf},st:{...f.st,...c.st},log:Array.isArray(c.log)?c.log:[],seen:Array.isArray(c.seen)?c.seen:[]}}
+let S=fresh(), saveRef=null, saving=false, dirty=false, saveTimer=0;
+function save(){S.at=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}dirty=true;clearTimeout(saveTimer);saveTimer=setTimeout(flush,1200)}
+async function flush(){
+  if(!saveRef||saving||!dirty)return;
+  saving=true;dirty=false;
+  try{await saveRef.set(JSON.parse(JSON.stringify(S)))}
+  catch(e){
+    if(e&&e.code==='unavailable'){dirty=true;setTimeout(flush,2000+rnd(2000))}
+    else{saveRef=null;syncNote();if(e&&e.code==='quota_exceeded')toast('Account storage is full. Progress is saved in this browser only.')}
+  }
+  saving=false;if(dirty)flush();
+}
+async function connect(){
+  if(!window.claude?.use)return;
+  const [db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')]);
+  if(!db||!user)return;
+  const id=await user.id();if(!id)return;
+  const ref=db.doc('data/users/'+id+'/save');
+  let decided=false;
+  ref.onSnapshot(snap=>{
+    const r=snap.exists?snap.data():null;
+    if(r&&r.v===1&&(r.at||0)>(S.at||0)){S=adopt(r);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}applyState()}
+    if(!decided&&!snap.metadata?.fromCache){
+      decided=true;saveRef=ref;syncNote();
+      if(!r||(S.at||0)>(r.at||0)){dirty=true;flush()}
+    }
+  },()=>{saveRef=null;syncNote()});
+}
+function applyState(){
+  renderOil();renderChart();renderBadge();
+  if(S.active&&G.mode!=='watch'){if(left()<=0)finishActive(true,true);else if(G.mode!==S.active.kind)setMode(S.active.kind)}
+  else if(!S.active&&(G.mode==='focus'||G.mode==='rest'))setMode('idle');
+  if(G.sheet==='sheetKeep')renderKeep();
+}
+
+// ---------- audio: everything is synthesized ----------
+let AC=null,OUT=null,WET=null;const A={};
+let muted=false;try{muted=localStorage.getItem('greywater.mute')==='1'}catch(e){}
+const CHORDS=[[73.42,110,174.61,261.63],[58.27,116.54,174.61,220],[65.41,130.81,164.81,220],[55,110,130.81,196]];
+let chordI=0;
+const live=()=>AC&&AC.state==='running';
+function noiseBuf(sec,kind){const n=AC.sampleRate*sec|0,b=AC.createBuffer(2,n,AC.sampleRate);for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);let last=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;if(kind==='brown'){last=(last+.02*w)/1.02;d[i]=last*3.5}else d[i]=w}}return b}
+function srcOf(buf,loop=true){const s=AC.createBufferSource();s.buffer=buf;s.loop=loop;return s}
+function filt(type,f,q=.7){const b=AC.createBiquadFilter();b.type=type;b.frequency.value=f;b.Q.value=q;return b}
+function gainN(v){const g=AC.createGain();g.gain.value=v;return g}
+function lfo(param,f,depth){const o=AC.createOscillator();o.frequency.value=f;o.connect(gainN(depth)).connect(param);o.start()}
+function impulse(sec){const n=AC.sampleRate*sec|0,b=AC.createBuffer(2,n,AC.sampleRate);for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.6)}return b}
+function audioInit(){
+  if(AC){if(AC.state==='suspended')AC.resume();return}
+  const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+  try{AC=new C()}catch(e){return}
+  const comp=AC.createDynamicsCompressor();comp.threshold.value=-16;comp.ratio.value=3;comp.connect(AC.destination);
+  OUT=gainN(muted?0:.85);OUT.connect(comp);
+  const conv=AC.createConvolver();conv.buffer=impulse(3.6);WET=gainN(.55);WET.connect(conv);conv.connect(OUT);
+  A.white=noiseBuf(3,'white');A.brown=noiseBuf(6,'brown');
+  const sea=srcOf(A.brown);A.seaLP=filt('lowpass',420);const seaG=gainN(.5);lfo(seaG.gain,.085,.28);sea.connect(A.seaLP).connect(seaG).connect(OUT);sea.start();
+  const surf=srcOf(A.white),sG=gainN(.03);lfo(sG.gain,.085,.025);surf.connect(filt('bandpass',1100,.5)).connect(sG).connect(OUT);surf.start(0,1.3);
+  const wind=srcOf(A.white);A.windBP=filt('bandpass',520,1.4);lfo(A.windBP.frequency,.05,260);A.windG=gainN(0);wind.connect(A.windBP).connect(A.windG).connect(OUT);wind.start(0,.7);
+  const rain=srcOf(A.white);A.rainG=gainN(0);rain.connect(filt('highpass',1600)).connect(filt('lowpass',7500)).connect(A.rainG).connect(OUT);rain.start(0,2.1);
+  A.padF=filt('lowpass',360,.9);lfo(A.padF.frequency,.031,140);const padG=gainN(.05);A.padF.connect(padG);padG.connect(OUT);padG.connect(WET);
+  A.pad=CHORDS[0].map((f,i)=>{const o=AC.createOscillator();o.type=i===0?'sawtooth':'triangle';o.frequency.value=f;o.detune.value=rnd(-7,7);o.connect(gainN(i===0?.3:.5)).connect(A.padF);o.start();return o});
+  const cr=AC.createBuffer(1,AC.sampleRate*4,AC.sampleRate),cd=cr.getChannelData(0);for(let i=0;i<cd.length;i++)cd[i]=Math.random()<.0009?(Math.random()*2-1):0;
+  const crs=srcOf(cr);A.crackG=gainN(0);crs.connect(filt('highpass',900)).connect(A.crackG).connect(OUT);crs.start();
+  setInterval(nextChord,20000);melody();
+}
+function nextChord(){if(!AC)return;chordI=(chordI+1)%CHORDS.length;const t=AC.currentTime;A.pad.forEach((o,i)=>o.frequency.setTargetAtTime(CHORDS[chordI][i],t,2.5))}
+function melody(){
+  setTimeout(melody,rnd(2200,5200));
+  if(!live()||!S.cf.gram)return;
+  const f=pick([293.66,329.63,349.23,440,523.25,587.33,698.46])*(Math.random()<.2?.5:1),t=AC.currentTime;
+  const g=gainN(0);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.055,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+3.2);
+  const o=AC.createOscillator();o.type='triangle';o.frequency.value=f;const o2=AC.createOscillator();o2.frequency.value=f*2;
+  o.connect(g);o2.connect(gainN(.3)).connect(g);const lp=filt('lowpass',1800);g.connect(lp);lp.connect(OUT);lp.connect(WET);
+  o.start(t);o2.start(t);o.stop(t+3.3);o2.stop(t+3.3);
+}
+function bell(f,gain=.25,pan=0,decay=2.6,when=0){
+  if(!live())return;const t=AC.currentTime+when,out=gainN(gain);
+  if(AC.createStereoPanner){const p=AC.createStereoPanner();p.pan.value=clamp(pan,-1,1);out.connect(p);p.connect(OUT);p.connect(WET)}else{out.connect(OUT);out.connect(WET)}
+  for(const [r,a] of [[1,1],[2,.32],[2.76,.5],[4.07,.18],[5.4,.14]]){
+    const o=AC.createOscillator(),g=gainN(0),d=decay/Math.sqrt(r);o.frequency.value=f*r;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(g).connect(out);o.start(t);o.stop(t+d+.05);
+  }
+}
+function bells(n,gain=.25,f=880){for(let i=0;i<n;i++)bell(f,gain,0,2.8,Math.floor(i/2)*1.1+(i%2)*.34)}
+function hornSound(lv){
+  if(!live())return;const t=AC.currentTime;
+  if(lv===1){bell(98,.55,0,6);bell(196,.2,0,4,.02);return}
+  const base=lv===0?233:lv===2?147:178,dur=lv===0?1.2:lv===2?2.2:2.4,peak=lv===0?.16:.22;
+  const o=AC.createOscillator(),o2=AC.createOscillator();o.type=lv===2?'square':'sawtooth';o2.type='sawtooth';o.frequency.value=base;o2.frequency.value=base*1.006;
+  const lp=filt('lowpass',lv===0?1000:700,1.2),g=gainN(0);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+.12);g.gain.setValueAtTime(peak,t+dur-.3);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  if(lv===3){for(const [os,b] of [[o,base],[o2,base*1.006]]){os.frequency.setValueAtTime(b,t+1.6);os.frequency.exponentialRampToValueAtTime(b*.6,t+1.85)}}
+  o.connect(lp);o2.connect(lp);lp.connect(g);g.connect(OUT);g.connect(WET);o.start(t);o2.start(t);o.stop(t+dur+.1);o2.stop(t+dur+.1);
+}
+function thunder(gain,delay){
+  if(!live())return;const t=AC.currentTime+delay,s=srcOf(A.brown,false),lp=filt('lowpass',900),g=gainN(0);
+  lp.frequency.setValueAtTime(900,t);lp.frequency.exponentialRampToValueAtTime(120,t+3);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+.06);g.gain.setTargetAtTime(gain*.5,t+.3,.4);g.gain.exponentialRampToValueAtTime(.0001,t+5);
+  s.connect(lp).connect(g).connect(OUT);g.connect(WET);s.start(t,rnd(0,1));s.stop(t+5.2);
+}
+function crash(){
+  if(!live())return;const t=AC.currentTime;
+  const s=srcOf(A.brown,false),g=gainN(0);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.7,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+1.4);s.connect(filt('lowpass',500)).connect(g).connect(OUT);s.start(t,rnd(0,3));s.stop(t+1.5);
+  const o=AC.createOscillator(),bp=filt('bandpass',320,7),g2=gainN(0);o.type='sawtooth';
+  o.frequency.setValueAtTime(75,t+.1);o.frequency.exponentialRampToValueAtTime(38,t+1.6);bp.frequency.setValueAtTime(320,t+.1);bp.frequency.exponentialRampToValueAtTime(110,t+1.6);
+  g2.gain.setValueAtTime(0,t+.1);g2.gain.linearRampToValueAtTime(.25,t+.3);g2.gain.exponentialRampToValueAtTime(.001,t+1.7);o.connect(bp).connect(g2).connect(OUT);g2.connect(WET);o.start(t+.1);o.stop(t+1.8);
+  const w=srcOf(A.white,false),wb=filt('bandpass',500,2),wg=gainN(0);wb.frequency.setValueAtTime(500,t+.4);wb.frequency.exponentialRampToValueAtTime(2600,t+1.3);
+  wg.gain.setValueAtTime(0,t+.4);wg.gain.linearRampToValueAtTime(.12,t+.6);wg.gain.exponentialRampToValueAtTime(.001,t+1.4);w.connect(wb).connect(wg).connect(OUT);w.start(t+.4);w.stop(t+1.5);
+}
+function tick(){if(!live())return;const t=AC.currentTime,o=AC.createOscillator(),g=gainN(0);o.frequency.setValueAtTime(1400,t);o.frequency.exponentialRampToValueAtTime(500,t+.03);g.gain.setValueAtTime(.05,t);g.gain.exponentialRampToValueAtTime(.0001,t+.05);o.connect(g).connect(OUT);o.start(t);o.stop(t+.06)}
+let audioT=0;
+function audioFrame(dt){
+  if(!AC||(audioT-=dt)>0)return;audioT=.25;const t=AC.currentTime,w=G.wx;
+  A.windG.gain.setTargetAtTime(.015+w.storm*.2+w.fog*.02,t,.6);A.rainG.gain.setTargetAtTime(w.rain*.14,t,.6);
+  A.seaLP.frequency.setTargetAtTime(330+w.storm*520,t,.8);A.crackG.gain.setTargetAtTime(S.cf.gram?.05:0,t,.3);
+}
+function setMute(m){
+  muted=m;try{localStorage.setItem('greywater.mute',m?'1':'0')}catch(e){}
+  if(OUT)OUT.gain.setTargetAtTime(m?0:.85,AC.currentTime,.05);
+  $('#sndOn').style.display=m?'none':'';$('#sndOff').style.display=m?'':'none';
+  $('#btnSound').setAttribute('aria-label',m?'Turn sound on':'Turn sound off');
+}
+
+// ---------- world ----------
+const ctx=$('#sea').getContext('2d');
+let W=0,H=0,DPR=1,F=800;
+const G={t:0,mode:'idle',ships:[],fx:[],rot:0,theta:0,aim:0,keyTurn:0,beams:[],half:0,range:0,beamCol:[240,196,108],flashK:0,
+  wx:{cloud:.45,fog:.3,rain:0,storm:.05},wxT:{cloud:.45,fog:.3,rain:0,storm:.05},wxTimer:40,lightning:0,bolt:null,shake:0,dawn:0,red:0,
+  spawnT:12,sprayT:1,smokeT:0,sheet:null,tab:'lamp',lastHH:-1,moonL:0,moonIllum:.5,phase:.5,shipSeq:0,beamList:[]};
+let Wt=null;
+const STARS=Array.from({length:170},()=>({x:Math.random(),y:Math.pow(Math.random(),1.3),r:Math.random()<.12?1.6:rnd(.6,1.2),a:rnd(.3,1),sp:rnd(.5,2.4),ph:rnd(TAU)}));
+const DROPS=Array.from({length:400},()=>({x:rnd(-50,2000),y:rnd(-40,1400),v:rnd(700,1100),l:rnd(10,22)}));
+const PRESETS={clear:{cloud:.3,fog:.15,rain:0,storm:0},mist:{cloud:.55,fog:.78,rain:0,storm:.05},drizzle:{cloud:.8,fog:.42,rain:.35,storm:.18},squall:{cloud:.96,fog:.3,rain:.85,storm:.72}};
+function weighted(o){let r=Math.random()*Object.values(o).reduce((a,b)=>a+b,0);for(const k in o){if((r-=o[k])<=0)return k}return Object.keys(o)[0]}
+
+function proj(X,Y,Z){return Z<5?null:{x:W/2+X*F/Z,y:G.HZ+(G.camH-Y)*F/Z}}
+function ray(th,s){const c=Math.cos(th),sn=Math.sin(th);if(c<0)s=Math.min(s,(G.LZ-14)/-c);const X=G.LX+s*sn,Z=G.LZ+s*c;return {x:W/2+X*F/Z,y:G.HZ+(G.camH-G.Hl)*F/Z}}
+function skylineAt(x){const r=G.rock;for(let i=1;i<r.length;i++)if(r[i][0]>=x){const a=r[i-1],b=r[i];return lerp(a[1],b[1],(x-a[0])/((b[0]-a[0])||1))}return r[r.length-1][1]}
+
+function layout(){
+  W=Math.max(320,innerWidth);H=Math.max(320,innerHeight);DPR=Math.min(2,devicePixelRatio||1);
+  const cv=$('#sea');cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+  const portrait=H>W;
+  G.HZ=H*(portrait?.42:.45);
+  F=portrait?W*1.5:Math.min(W*.62,H*.95);
+  G.camH=110*(H-G.HZ)/F;
+  const th=portrait?Math.min(H*.36,W*.8):H*.5, bw=th*.17, fx=portrait?Math.max(W*.22,bw*2.6):Math.max(W*.15,bw*3), fy=portrait?H*.83:H*.81;
+  G.T={fx,fy,th,bw};
+  G.lamp={x:fx,y:fy-th-th*.016-th*.0425};
+  G.LZ=G.camH*F/(fy-G.HZ);G.LX=(fx-W/2)*G.LZ/F;G.Hl=G.camH-(G.lamp.y-G.HZ)*G.LZ/F;
+  G.reefZ=G.camH*F/((H-G.HZ)*.36);
+  // foreground rock: a ridge that peaks under the tower and drops into the sea on the right
+  const xEnd=fx+bw*3.6,pts=[];
+  for(let x=-30;x<xEnd;x+=rnd(6,18)){const d=(x-fx)/(bw*3.6),flat=Math.abs(x-fx)<bw*.9;
+    const y=fy+th*.012+(d>0?Math.pow(d,2.2)*(H*.98-fy):d*d*(H-fy)*.35)+(flat?rnd(-1,1):rnd(-5,5));pts.push([x,y])}
+  pts.push([xEnd,H*.99]);G.rock=pts;G.rockEnd={x:xEnd,y:H*.99};
+  G.cracks=Array.from({length:14},()=>{const x=rnd(0,xEnd-20),y=skylineAt(x)+rnd(8,60);return [x,y,x+rnd(-14,14),y+rnd(10,34)]});
+  G.jettyA={x:fx+bw*2.2,y:skylineAt(fx+bw*2.2)};
+  G.harborS={x:Math.min(W-12,fx+bw*4.3),y:G.jettyA.y+bw*.22};
+  G.hz=G.camH*F/(G.harborS.y-G.HZ);G.hx=(G.harborS.x-W/2)*G.hz/F;
+  // reef band
+  G.reef=[];const hw=(W/2)/F*G.reefZ*1.15;
+  for(let X=-hw;X<hw;X+=rnd(12,28))G.reef.push({X,Z:G.reefZ+rnd(2,30),w:rnd(5,13),h:rnd(1.5,4.5),ph:rnd(TAU),pts:Array.from({length:6},()=>rnd(.55,1))});
+  G.reef.sort((a,b)=>b.Z-a.Z);
+  G.head=[];for(let x=W*.6;x<=W+20;x+=rnd(10,24))G.head.push([x,G.HZ-Math.max(0,Math.sin((x-W*.6)/(W*.4)*Math.PI*.9))*H*.028-rnd(0,2)]);
+  // vignette
+  G.vig=document.createElement('canvas');G.vig.width=Math.max(1,W/2|0);G.vig.height=Math.max(1,H/2|0);
+  const v=G.vig.getContext('2d'),vg=v.createRadialGradient(W/4,H/4,Math.min(W,H)*.18,W/4,H/4,Math.hypot(W,H)/4);
+  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.62)');v.fillStyle=vg;v.fillRect(0,0,W,H);
+}
+function noiseTex(w,h,scale,oct,rgb,shape){
+  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d'),img=x.createImageData(w,h),grids=[];
+  for(let o=0;o<oct;o++){const gw=Math.max(2,Math.round(w/scale*2**o)),gh=Math.max(2,Math.round(h/scale*2**o)),g=new Float32Array(gw*(gh+1));for(let i=0;i<g.length;i++)g[i]=Math.random();grids.push([gw,gh,g])}
+  for(let y=0;y<h;y++)for(let xx=0;xx<w;xx++){
+    let v=0,amp=1,tot=0;
+    for(const [gw,gh,g] of grids){const fx=xx/w*gw,fy=y/h*gh,ix=Math.floor(fx),iy=Math.floor(fy),tx=fx-ix,ty=fy-iy,sx=tx*tx*(3-2*tx),sy=ty*ty*(3-2*ty),i0=ix%gw,i1=(ix+1)%gw;
+      v+=amp*lerp(lerp(g[iy*gw+i0],g[iy*gw+i1],sx),lerp(g[(iy+1)*gw+i0],g[(iy+1)*gw+i1],sx),sy);tot+=amp;amp*=.5}
+    const i=(y*w+xx)*4;img.data[i]=rgb[0];img.data[i+1]=rgb[1];img.data[i+2]=rgb[2];img.data[i+3]=255*clamp(shape(v/tot,y/h),0,1);
+  }
+  x.putImageData(img,0,0);return c;
+}
+function textures(){
+  G.cloudTex=noiseTex(384,128,64,5,[12,20,24],(v,y)=>smooth((v-.4)/.28)*Math.min(1,y*4));
+  G.fogTex=noiseTex(256,72,48,4,[128,148,152],(v,y)=>smooth((v-.28)/.5)*Math.sin(Math.PI*y));
+  const g=document.createElement('canvas');g.width=g.height=128;const gx=g.getContext('2d'),gi=gx.createImageData(128,128);
+  for(let i=0;i<gi.data.length;i+=4){const n=Math.random()*255;gi.data[i]=gi.data[i+1]=gi.data[i+2]=n;gi.data[i+3]=255}
+  gx.putImageData(gi,0,0);G.grain=ctx.createPattern(g,'repeat');
+}
+
+// ---------- ships ----------
+function spawnShip(o={}){
+  const b=Wt?Math.floor(Wt.t/30):0, r=Math.random();
+  const type=o.type||(G.mode==='watch'?(b>=3&&r<.18?'steamer':r<.6?'smack':'barque'):pick(['smack','barque','barque','steamer']));
+  const z=o.z||1000, hw=(W/2)/F*z*.85, x=rnd(-hw,hw), rhw=(W/2)/F*G.reefZ*.7;
+  const tx=clamp(x*.35+rnd(-rhw*.5,rhw*.5),-rhw,rhw);
+  const ni=Math.random()*NAMES.length|0,pi=Math.random()*PORTS.length|0;
+  G.ships.push({id:++G.shipSeq,type,x,z,tx,tz:G.reefZ,speed:SHIP[type].speed*rnd(.9,1.1),need:SHIP[type].need,b:0,guided:false,state:'sail',ph:rnd(TAU),
+    bellT:rnd(1,4),ni,pi,name:shipName(type,ni,pi),dir:tx<x?-1:1,lit:0,vis:0,fade:1,sink:0,pays:G.mode==='watch'});
+}
+const shipName=(type,ni,pi)=>type==='ghost'?'The Marguerite':`${SHIP[type].label} ${NAMES[ni]}, out of ${PORTS[pi]}`;
+// every beam on the water: yours, and in a shared watch the other keepers' too
+function beamParts(X,Z){
+  let lit=0,pow=0;const dx=X-G.LX,dz=Z-G.LZ,d=Math.hypot(dx,dz),a=Math.atan2(dx,dz);
+  for(const b of G.beamList){if(d>b.rg)continue;const k=1-Math.abs(angDiff(a,b.th))/b.hw;if(k<=0)continue;
+    const v=Math.min(1,k*1.6)*Math.min(1,(b.rg-d)/(b.rg*.15));lit=Math.max(lit,v);pow+=v*b.fr}
+  return {lit,pow};
+}
+const beamLight=(X,Z)=>beamParts(X,Z).lit;
+function screenOf(s){const p=proj(s.x,0,s.z);return p?p.x:W/2}
+function shipBell(s){
+  const z=s.z,pan=screenOf(s)/W*2-1,g=clamp(.3*Math.pow(300/z,.8),.04,.36);
+  if(s.type==='ghost'){bell(311,g*.8,pan,6);bell(316,g*.5,pan,6,.02);return}
+  const f=SHIP[s.type].bell*(1+s.ph*.01);bell(f,g,pan,2.4);bell(f,g*.85,pan,2.4,.3);
+}
+function guide(s,quiet){s.guided=true;s.b=1;if(!quiet&&G.mode==='watch')fxGuide(s)}
+function fxGuide(s){
+  const p=proj(s.x,0,s.z),pan=(p?p.x/W:.5)*2-1;
+  if(s.type==='ghost'){bell(392,.25,pan,6);toast('You hold the light on her. She turns for the jetty.');return}
+  bell(SHIP[s.type].bell*1.5,.12,pan,1.6);bell(SHIP[s.type].bell*1.5,.1,pan,1.6,.18);
+  if(p)G.fx.push({k:'text',layer:'text',x:p.x,y:p.y-F/s.z*SHIP_SCALE*(SHIP[s.type].top[1]+4)-16,txt:s.name,font:'italic 15px "IM Fell English", Georgia, serif',col:[220,232,228],life:0,max:3.4});
+}
+function docked(s){
+  if(s.type==='ghost'){S.st.marg++;if(Wt)Wt.marg++;save();fxDock(s);return}
+  if(!s.pays||!Wt){bell(1318,.04,0,1.4);return}
+  const gal=Math.round(shipOil(S.up.harbor)*SHIP[s.type].mul);
+  S.oil+=gal;S.st.ships++;Wt.guided++;Wt.oil+=gal;Wt.o+=gal;save();renderOil();fxDock(s,gal);
+}
+function fxDock(s,gal){
+  if(s.type==='ghost'){bell(196,.4,0,8);bell(293.66,.25,0,8,.4);toast('The pale barque is gone. A page has come loose from Marr\'s log.');return}
+  bell(1318,.08,.3,1.6);bell(1760,.05,.3,1.4,.12);
+  const p=proj(s.x,0,s.z);
+  if(p&&gal)G.fx.push({k:'text',layer:'text',x:p.x,y:p.y-40,txt:`+${gal} gal`,font:'500 13px "IBM Plex Mono", monospace',col:[240,196,108],life:0,max:2.4});
+}
+function wreck(s){
+  s.state='sink';s.sink=0;Wt.hull--;Wt.lost++;fxWreck(s);
+  if(Wt.hull<=0)endNight(false,false);
+}
+function fxWreck(s){
+  renderHulls();crash();G.shake=1;
+  const p=proj(s.x,0,s.z);if(p)G.fx.push({k:'flare',layer:'front',x:p.x,y:p.y-20,vy:-H*.55,life:0,max:6.4});
+  G.fx.push({k:'debris',layer:'sea',X:s.x,Z:s.z,life:0,max:8});
+}
+function shipsUpdate(dt){
+  const watching=G.mode==='watch'&&Wt&&!Wt.over, follower=G.mode==='watch'&&CO.role==='keeper';
+  const slow=watching&&Wt.hornT>0?.35:1, spd=watching?1+(Wt.t/30)*.028:.8;
+  for(const s of G.ships){
+    const bp=s.state==='sail'?beamParts(s.x,s.z):{lit:0,pow:0};s.lit=bp.lit;
+    if(follower){
+      // the host owns this sea: glide toward its latest positions, extrapolating between updates
+      if(s.x2!==undefined){s.x2+=s.vx*dt;s.z2+=s.vz*dt;const f=Math.min(1,dt*8);s.x+=(s.x2-s.x)*f;s.z+=(s.z2-s.z)*f}
+      s.dir+=(((s.guided?G.hx:s.tx)-s.x<0?-1:1)-s.dir)*Math.min(1,dt*1.5);
+      if(s.state==='sink')s.sink=Math.min(1,s.sink+dt/3.5);else if(s.state!=='sail')s.fade-=dt/1.6;
+      else if(!s.guided&&watching&&(s.bellT-=dt)<=0){s.bellT=s.type==='ghost'?rnd(7,10):rnd(4.5,8);shipBell(s)}
+    } else if(s.state==='sail'){
+      const tx=s.guided?G.hx:s.tx,tz=s.guided?G.hz:s.tz,dx=tx-s.x,dz=tz-s.z,d=Math.hypot(dx,dz)||1;
+      const v=s.speed*spd*slow*dt*(s.guided?clamp(d/90,.35,1.15):1);
+      s.x+=dx/d*Math.min(v,d);s.z+=dz/d*Math.min(v,d);
+      s.dir+=((dx<0?-1:1)-s.dir)*Math.min(1,dt*1.5);
+      if(!s.guided){
+        if(bp.pow>0){s.b+=dt*Math.min(bp.pow,2.5)/s.need*(watching?1:3);if(s.b>=1)guide(s)}
+        else s.b=Math.max(0,s.b-dt*.12);
+        if(!watching&&s.z<G.reefZ+160)guide(s,true);
+        else if(s.z<=s.tz+1){
+          if(s.type==='ghost'){s.state='fade';s.fade=1;toast('The pale barque fades back into the fog.')}
+          else wreck(s);
+        } else if(watching&&(s.bellT-=dt)<=0){s.bellT=s.type==='ghost'?rnd(7,10):rnd(4.5,8);shipBell(s)}
+      } else if(d<70){s.state='dock';s.fade=1;docked(s)}
+    } else if(s.state==='sink')s.sink+=dt/3.5;
+    else s.fade-=dt/1.6;
+    const fogHide=1-G.wx.fog*.78*clamp(s.z/900,0,1);
+    const base=(.12+G.moonL*.45+G.dawn*.5)*fogHide;
+    s.vis=Math.max(base,s.lit,G.lightning*.9,Wt&&Wt.reveal>0?.8*Math.min(1,Wt.reveal):0,s.guided?.5*fogHide+.2:0);
+    if(s.type==='ghost')s.vis=Math.max(s.lit*1.1,.12+G.lightning*.3);
+  }
+  // a follower keeps every ship until the host's sea drops it, so a faded ship cannot come back as a new one
+  if(!follower)G.ships=G.ships.filter(s=>isFinite(s.x+s.z)&&!(s.state!=='sail'&&s.state!=='sink'&&s.fade<=0)&&!(s.state==='sink'&&s.sink>=1));
+}
+
+// ---------- weather, beams, watch ----------
+function lightning(){
+  const st=G.wx.storm;G.lightning=.8+rnd(.2);
+  if(st>.6){const pts=[];let x=rnd(W*.3,W*.95),y=-10;while(y<G.HZ){pts.push([x,y]);x+=rnd(-28,28);y+=rnd(12,34)}pts.push([x,G.HZ]);G.bolt={pts,life:.2}}
+  const near=st>.7&&Math.random()<.4;thunder(.25+st*.45,near?rnd(.1,.4):rnd(.6,2.8));if(near)G.shake=Math.max(G.shake,.5);
+}
+function update(dt){
+  G.t+=dt;
+  if(G.mode==='watch'&&Wt){
+    const b=Wt.t/30,morning=b>=16,st=morning?lerp(.55,.12,clamp((b-16)/8,0,1)):clamp(.12+b*.04+.15*Math.sin(Wt.t/47),0,1);
+    if(CO.role!=='keeper')G.wxT={storm:st,rain:clamp(st*1.1-.1,0,1),cloud:clamp(.45+st*.55,0,1),fog:clamp(.38+.32*Math.sin(Wt.t/61+1)+(morning?.12:0),0,1)};
+    G.dawn=Math.max(G.dawn,smooth((b-17)/7));
+  } else {
+    if((G.wxTimer-=dt)<=0){G.wxTimer=rnd(45,100);G.wxT={...PRESETS[weighted(G.mode==='rest'?{clear:3,mist:1}:{clear:3,mist:3.5,drizzle:2.5,squall:G.mode==='focus'?.6:1})]}}
+    G.dawn=Math.max(0,G.dawn-dt*.03);
+  }
+  for(const k in G.wx)G.wx[k]+=(G.wxT[k]-G.wx[k])*Math.min(1,dt*.08);
+  if(G.wx.storm>.45&&Math.random()<dt*(G.wx.storm-.45)*.35)lightning();
+  G.lightning=Math.max(0,G.lightning-dt*3.2);G.shake=Math.max(0,G.shake-dt*2.5);
+  if(G.bolt&&(G.bolt.life-=dt)<=0)G.bolt=null;
+
+  G.half=beamHalf(S.up.lens);G.range=rangeU(S.up.lens);G.beamCol=hex(FUEL_COL[S.up.fuel]);
+  const mine=th=>({th,hw:G.half,fr:fillRate(S.up.fuel),rg:G.range,col:G.beamCol});
+  if(G.mode==='watch'&&Wt&&!Wt.over){
+    if(G.keyTurn)G.aim=clamp(G.theta+G.keyTurn*.6,-LIM,LIM);
+    const mx=turnRate(S.up.clock)*dt;G.theta+=clamp(angDiff(G.aim,G.theta),-mx,mx);G.beams=[G.theta];
+    G.beamList=[mine(G.theta),...coBeams(dt)];
+    watchUpdate(dt);
+  } else if(G.mode!=='watch'){
+    const ch=charOf();
+    if(ch.n){G.rot=(G.rot+TAU/ch.p*dt)%TAU;const gap=TAU/ch.p*1.3;G.beams=Array.from({length:ch.n},(_,i)=>G.rot-i*gap)}else G.beams=[];
+    G.beamList=G.beams.map(mine);
+    if((G.spawnT-=dt)<=0){G.spawnT=rnd(18,40);if(G.ships.filter(s=>s.state==='sail').length<3)spawnShip()}
+  }
+  coFrame(dt);
+  const thc=Math.atan2(-G.LX,-G.LZ);G.flashK=G.beamList.length?0:.12;
+  for(const b of G.beamList)G.flashK=Math.max(G.flashK,smooth(1-Math.abs(angDiff(b.th,thc))/(b.hw*1.6)));
+  shipsUpdate(dt);fxUpdate(dt);audioFrame(dt);
+}
+function watchUpdate(dt){
+  Wt.hornCD=Math.max(0,Wt.hornCD-dt);Wt.hornT=Math.max(0,Wt.hornT-dt);Wt.reveal=Math.max(0,Wt.reveal-dt);
+  if(CO.role==='keeper'){
+    // a keeper only keeps the clock running between the host's updates
+    if(!CO.seen)return;Wt.t+=dt;const b=Math.floor(Wt.t/30);
+    if(b>Wt.bell){Wt.bell=b;if(b<24)bells(b%8||8,.2)}
+    return;
+  }
+  Wt.t+=dt;const b=Math.floor(Wt.t/30);
+  if(b>Wt.bell){Wt.bell=b;if(b>=24){endNight(true,false);return}bells(b%8||8,.2)}
+  // more keepers, more ships
+  const n=Math.max(1,CO.keepers||1),unguided=G.ships.filter(s=>s.state==='sail'&&!s.guided&&s.type!=='ghost').length;
+  if((Wt.spawnT-=dt)<=0&&unguided<2+b/6+(n-1)){spawnShip();Wt.spawnT=rnd(.7,1.3)*Math.max(3.1,7.5-b*.19)/(1+.35*(n-1))}
+  if(!Wt.ghost&&met(PAGES[7].need)&&b>=5&&Math.random()<dt*.02){Wt.ghost=true;spawnShip({type:'ghost'})}
+}
+function horn(){
+  if(G.mode!=='watch'||!Wt||Wt.over||Wt.hornCD>0)return;
+  const lv=S.up.horn;Wt.hornCD=hornCD(lv);hornSound(lv);Wt.myHorn++;
+  if(CO.role==='keeper'){CO.myHornAt=performance.now();CO.room?.presence({horn:Wt.myHorn,hl:lv}).catch(()=>{});ripple()}
+  else applyHorn(lv);
+}
+function applyHorn(lv){Wt.hornT=Math.max(Wt.hornT,hornHold(lv));Wt.reveal=2.5;Wt.hornN++;ripple()}
+function ripple(){G.fx.push({k:'ripple',layer:'sea',life:0,max:2.8},{k:'ripple',layer:'sea',life:-.5,max:2.8})}
+
+// ---------- shared night watch ----------
+// One keeper's page (the host) runs the sea and publishes it in its room presence about ten times a second.
+// Everyone else follows that sea and publishes only their own beam. Presence works for every viewer, so nothing here needs edit rights.
+const CO={lobby:null,user:null,room:null,role:null,night:null,keepers:1,cache:{},horns:{},prof:{},seen:false,base:null,
+  sendT:0,lastTh:null,lastSea:null,hostGoneAt:0,joinAt:0,myHornAt:0,lobbyN:0,lobbyB:-1};
+const KEEPER_COLS=['#9ec3ff','#e9a3c9','#c9b4ff','#9fe0e6','#e6c48f','#a7e0a0'];
+const cssRGB=(()=>{const c=document.createElement('canvas').getContext('2d');return s=>{c.fillStyle='#000';c.fillStyle=String(s||'#000');const v=c.fillStyle;if(v[0]==='#')return hex(v);const m=v.match(/[\d.]+/g);return m?m.slice(0,3).map(Number):[158,195,255]}})();
+function keeperRGB(p){const c=p.by&&CO.prof[p.by]?.color;if(c)return cssRGB(c);let h=0;for(const ch of p.peer)h=(h*31+ch.charCodeAt(0))|0;return hex(KEEPER_COLS[Math.abs(h)%KEEPER_COLS.length])}
+const keeperName=p=>p.sameTab?'You':(p.by&&CO.prof[p.by]?.name)||'A keeper';
+const isKeeper=p=>p.kind==='viewer'&&typeof p.presence.th==='number';
+const listNames=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+const watchName=b=>`${b<8?'First':b<16?'Middle':'Morning'} watch`;
+const bellText=b=>{const n=b%8||8;return `${n} bell${n>1?'s':''}`};
+async function coInit(){
+  if(!window.claude?.use)return;
+  const [room,user]=await Promise.all([window.claude.use('room'),window.claude.use('user')]);
+  if(!room)return;CO.lobby=room;CO.user=user;
+  room.onPeers(()=>{coProfiles();renderInvite()},()=>{CO.lobby=null;renderInvite()});
+  renderKeepers();
+}
+// names and colours as this viewer sees them; refreshed whenever the people present change
+function coProfiles(){
+  if(!CO.user?.profiles)return;
+  const ids=new Set();for(const R of [CO.lobby,CO.room])if(R)for(const p of R.peers())if(p.by)ids.add(p.by);
+  if(!ids.size)return;
+  CO.user.profiles([...ids]).then(ps=>{let changed=false;for(const id in ps){const v={name:ps[id].name,color:ps[id].color};if(!CO.prof[id]||CO.prof[id].name!==v.name){changed=true}CO.prof[id]=v}if(changed){renderInvite();renderKeepers()}});
+}
+function renderInvite(){
+  const el=$('#invite'),L=CO.lobby;
+  const open=L&&G.mode==='idle'?L.peers().filter(p=>!p.isMe&&p.kind==='viewer'&&p.presence.role==='host'&&/^night-[a-z0-9]{4,12}$/.test(String(p.presence.night))):[];
+  if(!open.length){el.hidden=true;return}
+  const p=open.sort((a,b)=>(+b.presence.keepers||0)-(+a.presence.keepers||0))[0],b=clamp(+p.presence.bell|0,0,23),n=clamp(+p.presence.keepers|0,1,99);
+  $('#inviteText').textContent=`${keeperName(p)} is keeping the light. ${watchName(b)}, ${bellText(b)} · ${n} keeper${n>1?'s':''} on the gallery.`;
+  $('#btnJoin').onclick=()=>joinNight(String(p.presence.night));el.hidden=false;
+}
+function renderKeepers(){
+  const el=$('#whKeepers');el.textContent='';
+  if(G.mode!=='watch')return;
+  const ps=CO.room?CO.room.peers().filter(isKeeper):[];
+  if(ps.length<2){if(CO.lobby&&CO.role!=='keeper')el.textContent='Friends who open this page can join you.';return}
+  for(const p of ps.sort((a,b)=>a.sameTab?-1:b.sameTab?1:0)){const s=document.createElement('span'),i=document.createElement('i');i.style.background=rgba(p.sameTab?G.beamCol:keeperRGB(p),1);s.append(i,keeperName(p));el.append(s)}
+}
+function beamPresence(){return {th:+G.theta.toFixed(3),hw:+G.half.toFixed(3),fr:+fillRate(S.up.fuel).toFixed(2),rg:G.range,horn:Wt?Wt.myHorn:0,hl:S.up.horn}}
+// the other keepers' beams, from their presence; every number is clamped because presence is untrusted
+function coBeams(dt){
+  if(!CO.room)return [];const out=[];
+  for(const p of CO.room.peers()){
+    if(p.sameTab||!isKeeper(p))continue;const pr=p.presence,c=CO.cache[p.peer]||(CO.cache[p.peer]={th:clamp(pr.th,-LIM,LIM)});
+    c.th+=angDiff(clamp(pr.th,-LIM,LIM),c.th)*Math.min(1,dt*12);
+    out.push({th:c.th,hw:clamp(+pr.hw||0,beamHalf(0),beamHalf(5)),fr:clamp(+pr.fr||0,fillRate(0),fillRate(5)),rg:clamp(+pr.rg||0,rangeU(0),rangeU(5)),col:mix(keeperRGB(p),[255,236,200],.35),name:keeperName(p)});
+  }
+  return out;
+}
+function seaSnap(){
+  const w=G.wxT,r2=v=>Math.round(v*100)/100;
+  return {t:r2(Wt.t),h:Wt.hull,g:Wt.guided,l:Wt.lost,o:Wt.o,m:Wt.marg,hn:Wt.hornN,ht:r2(Wt.hornT),rv:r2(Wt.reveal),wx:[w.cloud,w.fog,w.rain,w.storm].map(r2),over:Wt.result||0,
+    s:G.ships.slice(-30).map(s=>[s.id,TYPES.indexOf(s.type),Math.round(s.x),Math.round(s.z),Math.round(s.b*100),s.guided?1:0,STATES.indexOf(s.state),Math.round((s.state==='sink'?s.sink:s.fade)*100),s.ni|0,s.pi|0,Math.round(s.tx),Math.round(s.speed)])};
+}
+// a keeper turns the host's sea into its own: rewards come from the host's running totals, so a dropped update loses nothing
+function applySea(sea){
+  if(!sea||typeof sea!=='object'||!Array.isArray(sea.s)||!Wt)return;
+  const first=!CO.seen,num=(v,max)=>clamp(Math.floor(+v||0),0,max);
+  if(first&&sea.over){leaveNight();Wt=null;setMode('idle');toast('That watch has just ended. Start your own, or wait for another.');return}
+  CO.seen=true;
+  const o=num(sea.o,1e7),g=num(sea.g,1e6),m=num(sea.m,99);
+  if(first||!CO.base)CO.base={o,g,m};
+  else{
+    const dO=clamp(o-CO.base.o,0,80),dG=clamp(g-CO.base.g,0,10),dM=clamp(m-CO.base.m,0,1);
+    if(dO||dG||dM){S.oil+=dO;S.st.ships+=dG;S.st.marg+=dM;Wt.oil+=dO;save();renderOil()}
+    CO.base={o:Math.max(o,CO.base.o),g:Math.max(g,CO.base.g),m:Math.max(m,CO.base.m)};
+  }
+  const t=clamp(+sea.t||0,0,24*30);if(first||Math.abs(t-Wt.t)>1)Wt.t=t;else Wt.t+=(t-Wt.t)*.3;
+  if(first)Wt.bell=Math.floor(Wt.t/30);
+  Wt.guided=g;Wt.lost=num(sea.l,999);const hull=num(sea.h,3);if(hull!==Wt.hull){Wt.hull=hull;renderHulls()}
+  Wt.marg=m;Wt.o=o;Wt.hornT=clamp(+sea.ht||0,0,10);Wt.reveal=clamp(+sea.rv||0,0,3);
+  const hn=num(sea.hn,1e6);if(!first&&hn>Wt.hornN&&performance.now()-CO.myHornAt>1500)ripple();Wt.hornN=hn;
+  if(Array.isArray(sea.wx)){const [c,f,r,s]=sea.wx.map(v=>clamp(+v||0,0,1));G.wxT={cloud:c,fog:f,rain:r,storm:s}}
+  const now=performance.now(),byId=new Map(G.ships.map(s=>[s.id,s])),keep=new Set();
+  for(const r of sea.s.slice(0,40)){
+    if(!Array.isArray(r))continue;const [id,ti,x,z,b,gd,si,fs,ni,pi,tx,sp]=r,type=TYPES[ti];
+    if(!type||!Number.isFinite(x)||!Number.isFinite(z)||z<20||z>1500)continue;
+    keep.add(id);let s=byId.get(id);
+    if(!s){s={id,type,x,z,tx:0,tz:G.reefZ,speed:25,need:SHIP[type].need,b:0,guided:!!gd,state:STATES[si]||'sail',ph:rnd(TAU),bellT:rnd(1,4),ni:num(ni,NAMES.length-1),pi:num(pi,PORTS.length-1),dir:1,lit:0,vis:0,fade:1,sink:0,pays:false,vx:0,vz:0};
+      s.name=shipName(type,s.ni,s.pi);G.ships.push(s);byId.set(id,s)}
+    else if(s.x2!==undefined&&s.at){const d=Math.max(.05,(now-s.at)/1000);s.vx=clamp((x-s.x2)/d,-90,90);s.vz=clamp((z-s.z2)/d,-90,90)}
+    s.x2=x;s.z2=z;s.at=now;s.tx=+tx||0;s.speed=clamp(+sp||25,5,80);s.b=clamp((+b||0)/100,0,1);
+    const st=STATES[si]||'sail',gNow=!!gd;
+    if(!first){if(gNow&&!s.guided)fxGuide(s);if(st!==s.state){if(st==='dock')fxDock(s);else if(st==='sink')fxWreck(s);else if(st==='fade'&&type==='ghost')toast('The pale barque fades back into the fog.')}}
+    s.guided=gNow;s.state=st;if(st==='sink')s.sink=clamp((+fs||0)/100,0,1);else s.fade=clamp((+fs||0)/100,0,1);
+  }
+  G.ships=G.ships.filter(s=>keep.has(s.id));
+  if(sea.over==='dawn'||sea.over==='lost')endNight(sea.over==='dawn',false);
+}
+async function openNight(){
+  if(!CO.lobby)return;const name='night-'+Math.random().toString(36).slice(2,8);
+  let r;try{r=await CO.lobby.join(name)}catch(e){return}
+  if(G.mode!=='watch'||!Wt||Wt.over||CO.room){r.leave().catch(()=>{});return}
+  CO.room=r;CO.night=name;CO.role='host';CO.lobbyN=0;CO.lobbyB=-1;CO.sendT=0;
+  r.onPeers(()=>{coProfiles();renderKeepers()},()=>{if(CO.room===r){CO.room=null;CO.role=null;renderKeepers()}});
+  CO.lobby.presence({night:name,role:'host',bell:0,keepers:1}).catch(()=>{});renderKeepers();
+}
+async function joinNight(name){
+  if(!CO.lobby||G.mode!=='idle'||!/^night-[a-z0-9]{4,12}$/.test(name))return;
+  tick();$('#invite').hidden=true;
+  let r;try{r=await CO.lobby.join(name)}catch(e){toast('That watch could not be reached. Try again in a moment.');renderInvite();return}
+  if(G.mode!=='idle'){r.leave().catch(()=>{});return}
+  closeSheet();G.ships=[];G.fx=G.fx.filter(f=>f.k==='smoke');
+  Wt={t:0,bell:0,guided:0,lost:0,hull:3,hornCD:0,hornT:0,reveal:0,spawnT:2,ghost:true,over:false,oil:0,o:0,marg:0,hornN:0,myHorn:0,result:0,before:openPages()};
+  CO.room=r;CO.night=name;CO.role='keeper';CO.seen=false;CO.base=null;CO.lastSea=null;CO.lastTh=null;CO.cache={};CO.horns={};CO.hostGoneAt=0;CO.joinAt=performance.now();
+  r.onPeers(()=>{coProfiles();renderKeepers()},()=>{if(CO.room===r&&Wt&&!Wt.over)endNight(false,true)});
+  G.theta=G.aim=10*D2R;G.dawn=0;setMode('watch');renderHulls();
+  r.presence(beamPresence()).catch(()=>{});CO.lobby.presence({night:name,role:'keeper',bell:null,keepers:null}).catch(()=>{});
+  const h=$('#whHint');h.classList.add('show');clearTimeout(h._t);h._t=setTimeout(()=>h.classList.remove('show'),9000);
+}
+function leaveNight(){
+  const r=CO.room;CO.room=null;CO.role=null;CO.night=null;CO.seen=false;CO.cache={};CO.horns={};CO.keepers=1;
+  r?.leave().catch(()=>{});CO.lobby?.presence({night:null,role:null,bell:null,keepers:null}).catch(()=>{});renderKeepers();
+}
+function becomeHost(){
+  // the host went below; this keeper takes over the sea from the last update it saw
+  CO.role='host';CO.hostGoneAt=0;CO.sendT=0;CO.lobbyN=0;CO.lobbyB=-1;
+  for(const s of G.ships){if(s.x2!==undefined){s.x=s.x2;s.z=s.z2}s.tz=G.reefZ;s.pays=s.state==='sail';delete s.x2;delete s.z2}
+  G.shipSeq=Math.max(G.shipSeq,...G.ships.map(s=>s.id|0));Wt.spawnT=2;Wt.bell=Math.floor(Wt.t/30);
+  CO.lobby?.presence({night:CO.night,role:'host'}).catch(()=>{});toast('The other keeper went below. The watch is yours.');renderKeepers();
+}
+function coFrame(dt){
+  const r=CO.room;if(!r||G.mode!=='watch'||!Wt)return;
+  const peers=r.peers(),me=peers.find(p=>p.sameTab),now=Date.now(),keepers=peers.filter(isKeeper);
+  CO.keepers=Math.max(1,keepers.length);
+  // horns other keepers sounded: everyone hears them, the host also holds the ships
+  for(const p of peers){if(p.sameTab||!isKeeper(p))continue;const h=+p.presence.horn||0;
+    if(CO.horns[p.peer]===undefined){CO.horns[p.peer]=h;continue}
+    if(h>CO.horns[p.peer]){CO.horns[p.peer]=h;const lv=clamp(+p.presence.hl|0,0,3);hornSound(lv);if(CO.role==='host'&&!Wt.over)applyHorn(lv)}}
+  // a host's sea counts only while it keeps moving: a hidden or closed tab stops updating
+  const hosts=peers.filter(p=>!p.sameTab&&p.presence.sea&&typeof p.presence.sea==='object'&&now-p.updatedAt<3000);
+  if(CO.role==='host'){
+    const rival=!Wt.over&&hosts.find(p=>!p.presence.sea.over&&((+p.presence.sea.t||0)>Wt.t+2||(Math.abs((+p.presence.sea.t||0)-Wt.t)<=2&&me&&p.peer<me.peer)));
+    if(rival){yieldHost();CO.seen=false;CO.base=null;G.ships=[];return}
+    if((CO.sendT-=dt)<=0){CO.sendT=.1;r.presence({sea:seaSnap(),...beamPresence()}).catch(()=>{})}
+    const b=Math.min(23,Math.floor(Wt.t/30));
+    if(!Wt.over&&(CO.keepers!==CO.lobbyN||b!==CO.lobbyB)){CO.lobbyN=CO.keepers;CO.lobbyB=b;CO.lobby?.presence({bell:b,keepers:CO.keepers}).catch(()=>{});renderKeepers()}
+    return;
+  }
+  if(CO.role!=='keeper')return;
+  if((CO.sendT-=dt)<=0){CO.sendT=.066;const bp=beamPresence();if(bp.th!==CO.lastTh){CO.lastTh=bp.th;r.presence(bp).catch(()=>{})}}
+  if(hosts.length){
+    CO.hostGoneAt=0;const pr=hosts.sort((a,b)=>a.peer<b.peer?-1:1)[0].presence;
+    if(pr!==CO.lastSea){CO.lastSea=pr;applySea(pr.sea)}
+  } else if(!CO.seen){
+    if(performance.now()-CO.joinAt>7000){leaveNight();Wt=null;setMode('idle');toast('That watch has ended. Start your own, or wait for another.')}
+  } else if(!Wt.over){
+    if(!CO.hostGoneAt)CO.hostGoneAt=now;
+    else if(now-CO.hostGoneAt>1800){const first=keepers.filter(p=>p.sameTab||!p.presence.away).map(p=>p.peer).sort()[0];if(me&&first===me.peer)becomeHost()}
+  }
+}
+// hand the sea to someone else; the lineage of ship ids carries on, so this page can follow it straight away
+function yieldHost(){
+  CO.role='keeper';CO.base={o:Wt.o,g:Wt.guided,m:Wt.marg};CO.lastSea=null;CO.hostGoneAt=0;CO.joinAt=performance.now();
+  CO.room?.presence({sea:null}).catch(()=>{});CO.lobby?.presence({role:'keeper'}).catch(()=>{});
+}
+// a hidden tab stops animating, so a host that is not alone passes the sea on rather than freezing everyone's night
+document.addEventListener('visibilitychange',()=>{
+  const r=CO.room;if(!r)return;
+  r.presence({away:document.hidden||null}).catch(()=>{});
+  if(document.hidden&&CO.role==='host'&&CO.keepers>1&&Wt&&!Wt.over)yieldHost();
+  if(!document.hidden)CO.joinAt=performance.now();
+});
+function aimFromScreen(px,py){const Z=py>G.HZ+4?G.camH*F/(py-G.HZ):1400,X=(px-W/2)*Z/F;return clamp(Math.atan2(X-G.LX,Z-G.LZ),-LIM,LIM)}
+function fxUpdate(dt){
+  G.red=0;
+  for(const f of G.fx){f.life+=dt;
+    if(f.k==='spray'){f.vy+=300*dt;f.x+=f.vx*dt;f.y+=f.vy*dt}
+    else if(f.k==='smoke'){f.x+=(f.vx-G.wx.storm*30-8)*dt;f.y+=f.vy*dt;f.r+=dt*5}
+    else if(f.k==='flare'){if(f.life<.9)f.y+=f.vy*dt*(1-f.life/1.1);else{f.y+=16*dt;G.red=Math.max(G.red,(1-(f.life-.9)/5.5)*(.8+.2*Math.sin(f.life*23)))}}
+    else if(f.k==='text')f.y-=14*dt;
+  }
+  G.fx=G.fx.filter(f=>f.life<f.max);
+  if((G.sprayT-=dt)<=0){
+    G.sprayT=rnd(.8,2.6)/(.25+G.wx.storm*1.6);
+    const pts=G.rock.filter(p=>p[0]>G.T.fx+G.T.bw*1.3&&p[1]<H*.97);
+    if(pts.length){const p=pick(pts),n=REDUCED?6:(8+G.wx.storm*26|0);for(let i=0;i<n;i++)G.fx.push({k:'spray',layer:'front',x:p[0]+rnd(-8,8),y:p[1]+rnd(0,6),vx:rnd(-70,30),vy:-rnd(80,240)*(.4+G.wx.storm),s:rnd(1,2.6),life:0,max:rnd(.8,1.6)})}
+  }
+  if(S.cf.stove&&G.chimney&&(G.smokeT-=dt)<=0){G.smokeT=.4;G.fx.push({k:'smoke',layer:'front',x:G.chimney.x,y:G.chimney.y,vx:rnd(-4,4),vy:-rnd(10,16),r:G.T.bw*.08,life:0,max:rnd(5,7)})}
+}
+
+// ---------- drawing ----------
+function poly(p){ctx.beginPath();ctx.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)ctx.lineTo(p[i],p[i+1]);ctx.closePath()}
+function mast(x,y0,y1){ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x,y1);ctx.stroke()}
+function sq(x,y0,y1,w){ctx.beginPath();ctx.moveTo(x-w/2,y0);ctx.lineTo(x+w/2,y0);ctx.lineTo(x+w*.47,y1);ctx.quadraticCurveTo(x,y1+.9,x-w*.47,y1);ctx.closePath();ctx.fill()}
+function rig(type,hull,sail,line){
+  ctx.lineWidth=.32;ctx.strokeStyle=line;ctx.fillStyle=sail;
+  if(type==='smack'){
+    mast(.5,-2,-15);poly([.2,-3.2,.2,-14,-6.2,-11.8,-6.6,-3.4]);ctx.fill();poly([.9,-13.8,8.6,-2.8,.9,-3.2]);ctx.fill();
+    ctx.fillStyle=hull;poly([-7,0,6.5,0,9,-2.6,-7.6,-2.4]);ctx.fill();
+  } else if(type==='steamer'){
+    mast(10,-4,-16);mast(-11,-4,-14);
+    ctx.fillStyle=hull;poly([-16,0,15,0,18,-4.5,-16.5,-4.5]);ctx.fill();ctx.fillRect(-6,-7.5,10,3.2);ctx.fillRect(2,-9.8,3.6,2.4);ctx.fillRect(-3.4,-15,3,7.6);
+    ctx.fillStyle=sail;ctx.fillRect(-3.4,-14,3,1.2);
+    const a0=ctx.globalAlpha;ctx.fillStyle='#2a3438';
+    for(let i=0;i<6;i++){ctx.globalAlpha=a0*.25*(1-i/6);ctx.beginPath();ctx.arc(-2-i*3.2,-16.5-i*1.1+Math.sin(G.t+i)*.4,1.2+i*.55,0,TAU);ctx.fill()}
+    ctx.globalAlpha=a0;
+  } else {
+    const ghost=type==='ghost';
+    mast(7,-4,-22);mast(0,-4,-25);mast(-7,-4,-19);ctx.beginPath();ctx.moveTo(14,-3.6);ctx.lineTo(20,-5.8);ctx.stroke();
+    sq(7,-6,-11,8.6);sq(7,-11.8,-16,7);sq(0,-6,-11.5,9.4);sq(0,-12.3,-17.2,7.6);
+    if(!ghost){sq(7,-16.8,-20,5.4);sq(0,-18,-22,5.8);poly([-7.2,-5,-7.2,-17,-12.6,-14.6,-13,-5.2]);ctx.fill()}
+    poly([7.4,-20,19.5,-5.6,8,-6.4]);ctx.fill();
+    ctx.fillStyle=hull;poly([-13,0,12,0,16,-4,-13.6,-4]);ctx.fill();
+  }
+}
+function drawShip(s){
+  const p=proj(s.x,0,s.z);if(!p||p.x<-300||p.x>W+300)return;
+  const k=Math.min(F/s.z*SHIP_SCALE,Math.min(W,H)*.009),T=SHIP[s.type],ghost=s.type==='ghost',col=G.beamCol;
+  let a=ghost?s.vis:smooth(s.vis*1.8);if(s.state==='dock'||s.state==='fade')a*=Math.max(0,s.fade);
+  const bob=Math.sin(G.t*1.4+s.ph)*k*.3,sink=s.state==='sink'?s.sink:0;
+  const light=clamp(s.lit*.75+G.lightning*.5+G.flashK*.3,0,1);
+  if(a>.01){
+    ctx.save();ctx.beginPath();ctx.rect(p.x-k*45,p.y-k*45,k*90,k*45+bob+k*.6);ctx.clip();
+    ctx.translate(p.x,p.y+bob+sink*k*9);ctx.rotate(Math.sin(G.t*1.1+s.ph)*.035+sink*.6*(s.dir<0?-1:1));ctx.scale(s.dir*k,k);
+    ctx.globalAlpha=a;
+    if(ghost){ctx.globalAlpha=a*(.45+.25*Math.sin(G.t*2.3));ctx.shadowColor='rgba(190,230,240,.85)';ctx.shadowBlur=8+light*22}
+    const moon=G.moonL*.45+G.dawn*.4,hull=ghost?[150,190,200]:mix(mix([7,12,15],[40,50,54],moon),[44,44,40],light),sail=ghost?[196,220,226]:mix(mix([34,46,51],[128,142,145],moon),col,light*.85);
+    rig(s.type,rgba(hull,1),rgba(sail,1),ghost?'rgba(200,225,230,.7)':rgba(mix([22,30,32],col,light*.6),1));
+    ctx.restore();
+    if(s.state==='sail'&&a>.12){ctx.strokeStyle=rgba([200,215,218],a*.22);ctx.lineWidth=1;ctx.beginPath();const st=p.x-s.dir*k*12;ctx.moveTo(st,p.y+1);ctx.lineTo(st-s.dir*k*10,p.y+k*.9);ctx.stroke()}
+  }
+  if(!ghost&&s.state!=='sink'){
+    const lx=p.x+s.dir*k*T.top[0],ly=p.y+bob-k*T.top[1];
+    let la=s.guided?1:(((G.t+s.ph)%2.6)<.35?.95:.22);
+    if(s.state==='dock'||s.state==='fade')la*=s.fade;la*=1-G.wx.fog*.35*clamp(s.z/900,0,1);
+    const lc=s.guided?[127,211,162]:[240,190,110],r=6+k*2.6;
+    const g=ctx.createRadialGradient(lx,ly,0,lx,ly,r);g.addColorStop(0,rgba(lc,la*.7));g.addColorStop(1,rgba(lc,0));ctx.fillStyle=g;ctx.fillRect(lx-r,ly-r,r*2,r*2);
+    ctx.fillStyle=rgba(lc,la);ctx.beginPath();ctx.arc(lx,ly,Math.max(.9,k*.45),0,TAU);ctx.fill();
+    if(s.guided){ctx.fillStyle=rgba(lc,la*.2);ctx.fillRect(lx-.6,p.y+2,1.2+k*.3,k*4)}
+  }
+  if(!s.guided&&s.b>.02&&s.state==='sail'){
+    const ry=p.y-k*(T.top[1]+4)-10,rr=6+k*.9;ctx.lineWidth=2;
+    ctx.strokeStyle='rgba(255,255,255,.16)';ctx.beginPath();ctx.arc(p.x,ry,rr,0,TAU);ctx.stroke();
+    ctx.strokeStyle=ghost?'rgba(200,230,240,.95)':rgba(col,.95);ctx.beginPath();ctx.arc(p.x,ry,rr,-Math.PI/2,-Math.PI/2+s.b*TAU);ctx.stroke();
+  }
+}
+function drawTex(tex,y,h,alpha,off,scaleW){
+  if(alpha<.01)return;const tw=W*scaleW;let x0=-((off%tw)+tw)%tw;
+  ctx.globalAlpha=alpha;for(let x=x0;x<W;x+=tw)ctx.drawImage(tex,x,y,tw+1,h);ctx.globalAlpha=1;
+}
+function drawMoon(){
+  const mx=W*.76,my=G.HZ*.3,r=Math.max(9,Math.min(W,H)*.026),p=G.phase,a=G.moonIllum*(1-G.dawn*.6);
+  const g=ctx.createRadialGradient(mx,my,r*.5,mx,my,r*9);g.addColorStop(0,rgba([200,215,215],.22*a));g.addColorStop(1,rgba([200,215,215],0));ctx.fillStyle=g;ctx.fillRect(mx-r*9,my-r*9,r*18,r*18);
+  ctx.fillStyle='#19242a';ctx.beginPath();ctx.arc(mx,my,r,0,TAU);ctx.fill();
+  const waxing=p<.5,k=Math.cos(p*TAU);
+  ctx.fillStyle=rgba(mix([224,232,230],[200,206,206],G.dawn),.95);ctx.beginPath();
+  ctx.arc(mx,my,r,-Math.PI/2,Math.PI/2,!waxing);ctx.ellipse(mx,my,Math.abs(k)*r,r,0,Math.PI/2,-Math.PI/2,waxing?k>0:k<0);ctx.fill();
+}
+function drawWaves(){
+  const rows=REDUCED?30:44,amp=.7+G.wx.storm*1.6,t=G.t;ctx.lineWidth=1;
+  for(let i=1;i<rows;i++){
+    const u=i/rows,y0=G.HZ+(H-G.HZ)*Math.pow(u,1.7),Z=G.camH*F/(y0-G.HZ),a=F/Z*amp*.35;
+    ctx.strokeStyle=rgba([150,178,184],.025+.08*u+G.moonL*.05+G.dawn*.06);
+    ctx.setLineDash([(10+u*70)*(.6+(i*7%5)/6),(30+u*90)*(.7+(i*3%4)/5)]);ctx.lineDashOffset=-(i*37+t*(8+u*20));
+    ctx.beginPath();const step=Math.max(8,14-u*4);
+    for(let px=-step;px<=W+step;px+=step){const X=(px-W/2)*Z/F,y=y0+a*(Math.sin(X*.09+t*.8+i*1.7)+.5*Math.sin(X*.23-t*1.3+i));px<0?ctx.moveTo(px,y):ctx.lineTo(px,y)}
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+}
+function drawGlitter(){
+  const m=G.moonL;if(m<.04)return;const mx=W*.76;ctx.fillStyle='#d6e2e2';
+  for(let j=0;j<70;j++){const u=j/70,y=G.HZ+(H-G.HZ)*Math.pow(u,1.6),spread=6+(y-G.HZ)*.22,n=Math.sin(j*12.9898+Math.floor(G.t*3+j)*78.233)*43758.5453,fr=n-Math.floor(n),len=3+(y-G.HZ)*.06;
+    ctx.globalAlpha=m*.55*fr*fr*(1-u*.5);ctx.fillRect(mx+(fr-.5)*2*spread-len/2,y,len,1+u)}
+  ctx.globalAlpha=1;
+}
+function drawGround(){
+  ctx.globalCompositeOperation='lighter';
+  for(const bm of G.beamList){const th=bm.th,hw=bm.hw,R=bm.rg,col=bm.col,c=Math.cos(th);if(c<.1)continue;
+    const p0=proj(G.LX,0,G.LZ+4),a=proj(G.LX+R*Math.sin(th-hw),0,G.LZ+R*Math.cos(th-hw)),b=proj(G.LX+R*Math.sin(th+hw),0,G.LZ+R*Math.cos(th+hw));
+    if(!p0||!a||!b)continue;
+    const g=ctx.createLinearGradient(p0.x,p0.y,(a.x+b.x)/2,(a.y+b.y)/2);g.addColorStop(0,rgba(col,0));g.addColorStop(.15,rgba(col,.12*c));g.addColorStop(1,rgba(col,0));
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.closePath();ctx.fill();
+  }
+  ctx.globalCompositeOperation='source-over';
+}
+function drawReef(){
+  for(const r of G.reef){const p=proj(r.X,0,r.Z);if(!p||p.x<-40||p.x>W+40)continue;
+    const k=F/r.Z,w=r.w*k,h=r.h*k,lit=beamLight(r.X,r.Z),vis=.25+G.moonL*.3+lit*.8+G.lightning*.6+G.dawn*.5;
+    ctx.fillStyle=rgba(mix([6,11,13],[64,70,68],clamp(lit*.55+G.lightning*.35+G.dawn*.25,0,1)),1);
+    ctx.beginPath();ctx.moveTo(p.x-w/2,p.y);r.pts.forEach((q,i)=>ctx.lineTo(p.x-w/2+w*(i+.5)/6,p.y-h*q*(i%2?1:.7)));ctx.lineTo(p.x+w/2,p.y);ctx.closePath();ctx.fill();
+    const f=(.5+.5*Math.sin(G.t*1.6+r.ph))*(.35+G.wx.storm*.65);
+    ctx.fillStyle=rgba([215,228,228],f*vis*.55);ctx.fillRect(p.x-w*.7,p.y-1,w*1.4*(.6+.4*f),Math.max(1,k*.6));
+  }
+}
+function drawHarbor(){
+  const lv=S.up.harbor,a=G.jettyA,b=G.harborS,bw=G.T.bw;
+  if(lv>=2){ctx.lineCap='round';ctx.strokeStyle='#0b1215';ctx.lineWidth=bw*.3;ctx.beginPath();ctx.moveTo(a.x+bw*.4,a.y+bw*.5);ctx.quadraticCurveTo(b.x+bw*1.4,b.y+bw*.7,b.x+bw*2.3,b.y-bw*.1);ctx.stroke();
+    ctx.strokeStyle=rgba([210,225,228],.08+G.wx.storm*.15+.05*Math.sin(G.t*1.7));ctx.lineWidth=1.5;ctx.stroke();ctx.lineCap='butt'}
+  const thick=lv>=1?bw*.15:bw*.08;ctx.strokeStyle='#070c0e';ctx.lineWidth=1.4;ctx.beginPath();
+  for(let t=0;t<=1.001;t+=.1){const x=lerp(a.x,b.x,t),y=lerp(a.y,b.y,t);ctx.moveTo(x,y);ctx.lineTo(x,y+thick*2.6)}ctx.stroke();
+  ctx.strokeStyle=lv>=1?'#2a3438':'#1b2326';ctx.lineWidth=thick;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  const lamps=[[b.x,b.y-thick*2,[240,190,110]]];
+  if(lv>=3){lamps.push([lerp(a.x,b.x,.5),lerp(a.y,b.y,.5)-thick*2,[240,190,110]],[b.x+bw*2.3,b.y-bw*.4,[226,97,75]],[b.x+bw*.15,b.y-thick*3,[127,211,162]])}
+  ctx.globalCompositeOperation='lighter';
+  for(const [x,y,c] of lamps){const r=bw*.35,g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,rgba(c,.8));g.addColorStop(1,rgba(c,0));ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)}
+  ctx.globalCompositeOperation='source-over';
+}
+function drawLand(){
+  const {fx,fy,th,bw}=G.T,li=clamp(G.moonL*.8+G.lightning*.9+G.dawn*.6+G.flashK*.25,0,1);
+  // rock
+  ctx.fillStyle='#05090b';ctx.beginPath();ctx.moveTo(-30,H+30);for(const p of G.rock)ctx.lineTo(p[0],p[1]);ctx.lineTo(G.rockEnd.x+20,H+30);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=rgba(mix([150,172,176],G.beamCol,G.flashK*.6),.06+G.moonL*.18+G.lightning*.4+G.dawn*.2+G.flashK*.25);ctx.lineWidth=1.2;
+  ctx.beginPath();G.rock.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
+  ctx.strokeStyle=rgba([120,140,144],.05+G.lightning*.15);ctx.lineWidth=1;ctx.beginPath();for(const c of G.cracks){ctx.moveTo(c[0],c[1]);ctx.lineTo(c[2],c[3])}ctx.stroke();
+  if(G.red>0){ctx.strokeStyle=rgba([226,97,75],G.red*.25);ctx.lineWidth=1.5;ctx.beginPath();G.rock.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke()}
+  // cottage
+  const x0=fx-bw*2.4,cw=bw*1.4,base=skylineAt(x0+cw/2)+3,ch=bw*.62;
+  ctx.fillStyle=rgba(mix([28,36,39],[100,106,104],li*.6),1);ctx.fillRect(x0,base-ch,cw,ch+4);
+  ctx.fillStyle='#0c1215';poly([x0-bw*.1,base-ch,x0+cw/2,base-ch-bw*.46,x0+cw+bw*.1,base-ch]);ctx.fill();
+  ctx.fillRect(x0+cw*.7,base-ch-bw*.5,bw*.15,bw*.34);G.chimney={x:x0+cw*.7+bw*.075,y:base-ch-bw*.5};
+  const wx=x0+cw*.18,wy=base-ch*.66,ww=cw*.2,wh=ch*.32;
+  if(S.cf.stove){const fl=.85+.15*Math.sin(G.t*9)*Math.sin(G.t*3.7);ctx.fillStyle=rgba([232,168,92],fl);ctx.fillRect(wx,wy,ww,wh);
+    ctx.globalCompositeOperation='lighter';const r=bw*1.1,g=ctx.createRadialGradient(wx+ww/2,wy+wh/2,0,wx+ww/2,wy+wh/2,r);g.addColorStop(0,rgba([232,168,92],.28*fl));g.addColorStop(1,rgba([232,168,92],0));ctx.fillStyle=g;ctx.fillRect(wx-r,wy-r,r*2,r*2);ctx.globalCompositeOperation='source-over'}
+  else{ctx.fillStyle='#0a0f11';ctx.fillRect(wx,wy,ww,wh)}
+  ctx.fillStyle='#0a0f11';ctx.fillRect(x0+cw*.62,base-ch*.62,cw*.14,ch*.62);
+  // tower
+  const tw=bw*.6,gy=fy-th,wAt=y=>lerp(bw,tw,(fy-y)/th);
+  const g=ctx.createLinearGradient(fx-bw/2,0,fx+bw/2,0);
+  g.addColorStop(0,rgba(mix([22,29,32],[120,128,130],li*.6),1));g.addColorStop(.62,rgba(mix([60,72,75],[205,212,212],li),1));g.addColorStop(1,rgba(mix([38,48,51],[170,178,180],li),1));
+  ctx.fillStyle=g;poly([fx-bw/2,fy+4,fx+bw/2,fy+4,fx+tw/2,gy,fx-tw/2,gy]);ctx.fill();
+  const y1=fy-th*.52,y2=fy-th*.66;ctx.fillStyle=rgba(mix([12,17,19],[40,46,48],li),1);poly([fx-wAt(y1)/2,y1,fx+wAt(y1)/2,y1,fx+wAt(y2)/2,y2,fx-wAt(y2)/2,y2]);ctx.fill();
+  for(const [hh,on] of [[.2,S.cf.stove],[.42,0],[.8,0]]){const y=fy-th*hh;ctx.fillStyle=on?'rgba(232,168,92,.9)':'#0b1113';ctx.fillRect(fx-bw*.05,y-bw*.12,bw*.1,bw*.22)}
+  ctx.fillStyle='#0b1113';ctx.fillRect(fx-bw*.11,fy-bw*.42,bw*.22,bw*.42);
+  const gw=tw*1.55,gh=th*.016,rh=th*.035;ctx.fillStyle='#10171a';ctx.fillRect(fx-gw/2,gy-gh,gw,gh);
+  ctx.strokeStyle='#141c1f';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(fx-gw/2,gy-gh-rh);ctx.lineTo(fx+gw/2,gy-gh-rh);for(let i=0;i<=8;i++){const x=fx-gw/2+gw*i/8;ctx.moveTo(x,gy-gh);ctx.lineTo(x,gy-gh-rh)}ctx.stroke();
+  const lw=tw*.86,lh=th*.085,ly=gy-gh-lh,col=G.beamCol;
+  ctx.fillStyle=rgba(col,.55+G.flashK*.4);ctx.fillRect(fx-lw/2,ly,lw,lh);
+  const lr=lh*(.22+S.up.lens*.05);ctx.fillStyle=rgba(mix(col,[255,255,255],.5),.95);ctx.beginPath();ctx.ellipse(fx,ly+lh/2,lr*.8,lr,0,0,TAU);ctx.fill();
+  ctx.strokeStyle='#0d1417';ctx.lineWidth=1.2;ctx.beginPath();for(let i=0;i<=4;i++){const x=fx-lw/2+lw*i/4;ctx.moveTo(x,ly);ctx.lineTo(x,ly+lh)}ctx.moveTo(fx-lw/2,ly+lh/2);ctx.lineTo(fx+lw/2,ly+lh/2);ctx.stroke();
+  ctx.fillStyle='#141c1f';ctx.beginPath();ctx.ellipse(fx,ly,lw*.6,lh*.55,0,Math.PI,TAU);ctx.fill();
+  ctx.beginPath();ctx.arc(fx,ly-lh*.6,lh*.09,0,TAU);ctx.fill();ctx.strokeStyle='#141c1f';ctx.beginPath();ctx.moveTo(fx,ly-lh*.65);ctx.lineTo(fx,ly-lh*1.15);ctx.stroke();
+  G.lamp={x:fx,y:ly+lh/2};G.rail={x:fx+gw*.34,y:gy-gh-rh};
+}
+function drawCat(){
+  if(!S.cf.cat)return;const c=G.T.th*.02,{x,y}=G.rail;ctx.fillStyle='#05080a';ctx.strokeStyle='#05080a';
+  ctx.beginPath();ctx.ellipse(x,y-c*1.05,c*.85,c*1.1,0,0,TAU);ctx.fill();
+  ctx.beginPath();ctx.arc(x+c*.3,y-c*2.4,c*.55,0,TAU);ctx.fill();
+  poly([x-.05*c,y-c*2.6,x+.1*c,y-c*3.35,x+.42*c,y-c*2.85]);ctx.fill();poly([x+.35*c,y-c*2.85,x+.7*c,y-c*3.35,x+.82*c,y-c*2.55]);ctx.fill();
+  ctx.lineWidth=c*.28;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x-c*.6,y-c*.3);ctx.quadraticCurveTo(x-c*1.3,y+c*.6,x-c*.9+Math.sin(G.t*1.3)*c*.5,y+c*2);ctx.stroke();ctx.lineCap='butt';
+}
+function drawBeams(){
+  const col=G.beamCol,L=G.lamp,sc=.3+G.wx.fog*.5+G.wx.rain*.3+G.lightning*.2;ctx.globalCompositeOperation='lighter';
+  for(const bm of G.beamList)for(const [m,al] of [[2.6,.05],[1.4,.1],[.6,.16],[.2,.2]]){
+    const hw=bm.hw*m,R=bm.rg*1.3,a=ray(bm.th-hw,R),b=ray(bm.th+hw,R),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+    if(!isFinite(mx+my))continue;
+    const g=ctx.createLinearGradient(L.x,L.y,mx,my);g.addColorStop(0,rgba(bm.col,al*sc*2.2));g.addColorStop(.35,rgba(bm.col,al*sc));g.addColorStop(1,rgba(bm.col,0));
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(L.x,L.y);ctx.lineTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.closePath();ctx.fill();
+  }
+  const r=Math.max(4,G.T.th*(.07+S.up.lens*.012)*(1+G.flashK*1.5));
+  let g=ctx.createRadialGradient(L.x,L.y,0,L.x,L.y,r);g.addColorStop(0,rgba(col,.85));g.addColorStop(.25,rgba(col,.3));g.addColorStop(1,rgba(col,0));ctx.fillStyle=g;ctx.fillRect(L.x-r,L.y-r,r*2,r*2);
+  const f=G.flashK;
+  if(f>.01){const R2=Math.max(W,H)*.8*f;g=ctx.createRadialGradient(L.x,L.y,0,L.x,L.y,Math.max(1,R2));g.addColorStop(0,rgba(col,.7*f));g.addColorStop(.2,rgba(col,.2*f));g.addColorStop(1,rgba(col,0));ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=rgba(mix(col,[255,255,255],.4),.5*f);ctx.beginPath();ctx.ellipse(L.x,L.y,W*.5*f,1.5+3*f,0,0,TAU);ctx.fill()}
+  ctx.globalCompositeOperation='source-over';
+  // other keepers' names ride on their beams
+  ctx.font='italic 14px "IM Fell English", Georgia, serif';ctx.textAlign='center';ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=6;
+  for(const bm of G.beamList){if(!bm.name)continue;const p=ray(bm.th,bm.rg*.42);if(!isFinite(p.x+p.y))continue;
+    ctx.fillStyle=rgba(bm.col,.9);ctx.fillText(bm.name,clamp(p.x,60,W-60),clamp(p.y-10,60,H-60))}
+  ctx.shadowBlur=0;
+}
+function drawFx(layer){
+  for(const f of G.fx){if(f.layer!==layer||f.life<0)continue;const u=f.life/f.max;
+    if(f.k==='ripple'){const r=u*900;ctx.strokeStyle=rgba([190,210,212],(1-u)*.32);ctx.lineWidth=1.4;ctx.beginPath();let on=false;
+      for(let i=0;i<=64;i++){const a=-1.45+2.9*i/64,p=proj(G.LX+r*Math.sin(a),0,G.LZ+r*Math.cos(a));if(!p){on=false;continue}on?ctx.lineTo(p.x,p.y):(ctx.moveTo(p.x,p.y),on=true)}ctx.stroke()}
+    else if(f.k==='debris'){const p=proj(f.X,0,f.Z);if(!p)continue;const k=F/f.Z;ctx.fillStyle=rgba([24,30,32],(1-u)*.9);
+      for(let i=0;i<5;i++)ctx.fillRect(p.x+Math.sin(i*7.3)*k*6+Math.sin(G.t*.7+i)*k,p.y+Math.sin(G.t*1.3+i*2)*k*.4+Math.cos(i*3.1)*k*1.2,k*(1.5+i%3),Math.max(1,k*.35))}
+    else if(f.k==='spray'){ctx.fillStyle=rgba([210,225,228],(1-u)*.5);ctx.fillRect(f.x,f.y,f.s,f.s)}
+    else if(f.k==='smoke'){ctx.fillStyle=rgba([60,70,74],(1-u)*.14);ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,TAU);ctx.fill()}
+    else if(f.k==='flare'){
+      if(f.life<.9){ctx.strokeStyle='rgba(255,170,140,.85)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(f.x+2,f.y+34);ctx.stroke()}
+      else{const i=1-(f.life-.9)/5.5,r=30+40*i;ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,r);g.addColorStop(0,rgba([255,120,90],.9*i));g.addColorStop(.2,rgba([226,97,75],.4*i));g.addColorStop(1,rgba([226,97,75],0));ctx.fillStyle=g;ctx.fillRect(f.x-r,f.y-r,r*2,r*2);ctx.globalCompositeOperation='source-over'}}
+    else if(f.k==='text'){const a=Math.min(1,f.life*3)*(1-Math.max(0,(u-.6)/.4));ctx.font=f.font;ctx.textAlign='center';ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=8;ctx.fillStyle=rgba(f.col,a);ctx.fillText(f.txt,clamp(f.x,120,W-120),f.y);ctx.shadowBlur=0}
+  }
+}
+function draw(dt){
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(G.shake>0&&!REDUCED)ctx.translate(rnd(-1,1)*G.shake*7,rnd(-1,1)*G.shake*7);
+  const wx=G.wx,HZ=G.HZ,Lg=G.lightning,dawn=G.dawn;
+  G.moonL=G.moonIllum*(1-wx.cloud*.7)*(1-dawn*.4);
+  let g=ctx.createLinearGradient(0,0,0,HZ);
+  g.addColorStop(0,rgba(mix([4,8,11],[44,54,64],dawn),1));g.addColorStop(.75,rgba(mix([12,21,25],[96,108,116],dawn),1));g.addColorStop(1,rgba(mix([22,35,40],[150,158,160],dawn),1));
+  ctx.fillStyle=g;ctx.fillRect(-20,-20,W+40,HZ+21);
+  const starA=(1-wx.cloud*.85)*(1-dawn);
+  if(starA>.02){ctx.fillStyle='#dfe8e6';for(const s of STARS){const a=starA*s.a*(.6+.4*Math.sin(G.t*s.sp+s.ph));if(a<.02)continue;ctx.globalAlpha=a;ctx.fillRect(s.x*W,s.y*HZ*.92,s.r,s.r)}ctx.globalAlpha=1}
+  drawMoon();
+  if(Lg>0){ctx.fillStyle=rgba([200,215,230],Lg*.55);ctx.fillRect(0,0,W,HZ)}
+  drawTex(G.cloudTex,-HZ*.05,HZ*1.1,wx.cloud*.9,G.t*(3+wx.storm*14),1.7);
+  drawTex(G.cloudTex,HZ*.2,HZ*.9,wx.cloud*.65,G.t*(5+wx.storm*22)+300,1.15);
+  ctx.fillStyle=rgba(mix([10,18,22],[70,80,86],dawn),1);ctx.beginPath();ctx.moveTo(W*.6,HZ+1);for(const p of G.head)ctx.lineTo(p[0],p[1]);ctx.lineTo(W+20,HZ+1);ctx.closePath();ctx.fill();
+  if((G.t%3)<.45){const x=W*.93,y=G.HZ-H*.012,r=8;const sg=ctx.createRadialGradient(x,y,0,x,y,r);sg.addColorStop(0,'rgba(226,97,75,.9)');sg.addColorStop(1,'rgba(226,97,75,0)');ctx.fillStyle=sg;ctx.fillRect(x-r,y-r,r*2,r*2)}
+  g=ctx.createLinearGradient(0,HZ,0,H);g.addColorStop(0,rgba(mix([18,30,34],[95,108,114],dawn),1));g.addColorStop(1,rgba(mix([4,9,11],[30,40,45],dawn),1));ctx.fillStyle=g;ctx.fillRect(-20,HZ,W+40,H-HZ+20);
+  if(Lg>0){ctx.fillStyle=rgba([170,190,205],Lg*.22);ctx.fillRect(0,HZ,W,H-HZ)}
+  drawGlitter();drawWaves();drawGround();drawReef();
+  const fogC=mix([96,116,120],[160,170,172],dawn);
+  g=ctx.createLinearGradient(0,HZ-50,0,HZ+70);g.addColorStop(0,rgba(fogC,0));g.addColorStop(.42,rgba(fogC,.18+wx.fog*.45));g.addColorStop(1,rgba(fogC,0));ctx.fillStyle=g;ctx.fillRect(0,HZ-50,W,120);
+  drawTex(G.fogTex,HZ-(H-HZ)*.1,(H-HZ)*.6,wx.fog*.6,G.t*(6+wx.storm*10),1.3);
+  const ships=G.ships.slice().sort((a,b)=>b.z-a.z);for(const s of ships)drawShip(s);
+  drawFx('sea');
+  drawTex(G.fogTex,HZ+(H-HZ)*.25,(H-HZ)*.8,wx.fog*.28,G.t*(10+wx.storm*16)+200,1.8);
+  drawHarbor();drawLand();drawBeams();drawCat();drawFx('front');
+  if(G.red>0){ctx.fillStyle=rgba([226,97,75],.07*G.red);ctx.fillRect(0,0,W,H)}
+  const n=Math.floor(wx.rain*(W<700?170:380));
+  if(n){const wind=-.25-wx.storm*.45;ctx.strokeStyle=rgba([170,192,198],.2+Lg*.3);ctx.lineWidth=1;ctx.beginPath();
+    for(let i=0;i<n;i++){const d=DROPS[i];d.y+=d.v*dt;d.x+=d.v*wind*dt;if(d.y>H){d.y=rnd(-40,0);d.x=rnd(-50,W+150)}if(d.x<-60)d.x+=W+200;ctx.moveTo(d.x,d.y);ctx.lineTo(d.x-wind*d.l,d.y-d.l)}ctx.stroke()}
+  if(G.bolt){const a=G.bolt.life/.2;ctx.strokeStyle=rgba([235,240,255],a);ctx.lineWidth=2.2;ctx.beginPath();G.bolt.pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();ctx.strokeStyle=rgba([200,215,255],a*.2);ctx.lineWidth=9;ctx.stroke()}
+  ctx.drawImage(G.vig,0,0,W,H);
+  ctx.save();ctx.globalAlpha=.055;ctx.fillStyle=G.grain;if(!REDUCED)ctx.translate(rnd(128)|0,rnd(128)|0);ctx.fillRect(-128,-128,W+256,H+256);ctx.restore();
+  if(Lg>0){ctx.fillStyle=rgba([220,230,240],Lg*.12);ctx.fillRect(0,0,W,H)}
+  drawFx('text');
+}
+
+// ---------- modes: focus, rest, watch ----------
+const left=()=>S.active?S.active.start+S.active.dur-Date.now():0;
+function setMode(m){
+  G.mode=m;document.body.dataset.mode=m;
+  $('#dock').hidden=m!=='idle';$('#title').hidden=m!=='idle';
+  $('#focusHud').hidden=!(m==='focus'||m==='rest');$('#watchHud').hidden=m!=='watch';
+  if((m==='focus'||m==='rest')&&S.active){const a=S.active;
+    $('#fhLabel').textContent=m==='rest'?'Resting · the lamp is banked':`Keeping the lamp · eight bells at ${clock(new Date(a.start+a.dur))}`;
+    $('#fhTask').textContent=m==='rest'?'Stand up, drink some water, look at something far away.':(a.task||'An unnamed watch');resetDouse()}
+  if(m!=='watch')G.keyTurn=0;
+  renderInvite();renderKeepers();
+}
+function resetDouse(){
+  $('#fhAct').innerHTML=`<button class="ghost" id="btnDouse">${G.mode==='rest'?'End the rest':'Douse the lamp early'}</button>`;
+  $('#btnDouse').onclick=()=>{
+    if(G.mode==='rest'){finishActive(false);return}
+    $('#fhAct').innerHTML='<span class="q">Douse it now? You keep half the oil.</span><button id="dYes">Douse</button><button class="primary" id="dNo">Keep going</button>';
+    $('#dYes').onclick=()=>finishActive(false);$('#dNo').onclick=resetDouse;$('#dNo').focus();
+  };
+}
+function startFocus(min,task){S.active={kind:'focus',start:Date.now(),dur:min*60000,task:task.slice(0,80)};S.dur=min;save();setMode('focus');closeSheet();bells(1,.3);wake(true)}
+function startRest(){S.active={kind:'rest',start:Date.now(),dur:5*60000,task:''};save();setMode('rest');closeSheet();wake(true)}
+function checkTimer(){if(S.active&&left()<=0)finishActive(true)}
+function finishActive(done,away){
+  const a=S.active;if(!a)return;S.active=null;wake(false);
+  if(a.kind==='rest'){save();setMode('idle');bells(2,.25);toast('Rest is over. The lamp is ready when you are.');return}
+  const min=Math.floor((done?a.dur:clamp(Date.now()-a.start,0,a.dur))/60000);
+  if(!done&&min<1){save();setMode('idle');toast('The lamp is doused. Nothing went in the log.');return}
+  const before=openPages(),ships=focusShips(min),oil=focusOil(min,done)+ships*shipOil(S.up.harbor);
+  S.oil+=oil;S.st.min+=min;S.st.ships+=ships;if(done)S.st.sessions++;
+  S.log.unshift({t:a.start,min,task:a.task||'',done});if(S.log.length>400)S.log.length=400;
+  const got=newPages(before);save();setMode('idle');renderOil();renderBadge();if(done)bells(8,.32);
+  $('#doneEye').textContent=done?'Eight bells':'The lamp is doused';
+  $('#doneH').textContent=done?'The watch is kept':'You ended the watch early';
+  $('#doneText').textContent=(away?'It finished while you were away. ':'')+`${hm(min)} kept${a.task?` on “${a.task}”`:''}. `+(done?'The log is written up and the oil is in the store.':'You keep half the oil, and the time still counts.');
+  tally('#doneTally',[['Oil',`+${oil} gal`],['Ships brought in',ships],['This watch',hm(min)],['Kept in all',hm(S.st.min)]]);
+  unlockNote('#doneUnlock',got);openSheet('sheetDone');
+}
+function startWatch(){
+  if(CO.room)leaveNight();
+  closeSheet();G.ships=[];G.fx=G.fx.filter(f=>f.k==='smoke');
+  Wt={t:0,bell:0,guided:0,lost:0,hull:3,hornCD:0,hornT:0,reveal:0,spawnT:2.5,ghost:false,over:false,oil:0,o:0,marg:0,hornN:0,myHorn:0,result:0,before:openPages()};
+  G.theta=G.aim=10*D2R;G.dawn=0;setMode('watch');bells(8,.22);renderHulls();
+  const h=$('#whHint');h.classList.add('show');clearTimeout(h._t);h._t=setTimeout(()=>h.classList.remove('show'),9000);
+  openNight();
+}
+function endNight(dawn,quit){
+  if(!Wt||Wt.over)return;Wt.over=true;Wt.result=quit?0:dawn?'dawn':'lost';$('#whHint').classList.remove('show');
+  const bonus=dawn?60:0;S.oil+=bonus;Wt.oil+=bonus;S.st.nights++;if(dawn)S.st.dawns++;S.st.best=Math.max(S.st.best||0,Wt.guided);
+  const got=newPages(Wt.before),w=Wt;save();renderOil();renderBadge();if(dawn)bells(8,.3);
+  for(const s of G.ships)s.pays=false;
+  const others=CO.room?CO.room.peers().filter(p=>!p.sameTab&&isKeeper(p)).map(keeperName):[];
+  const kept=others.length?` You kept it with ${listNames(others)}.`:'';
+  // a host that finishes stays a moment so every keeper sees how the night ended; anyone else just goes
+  if(CO.role==='host'&&!quit){const r=CO.room;CO.lobby?.presence({night:null,role:null,bell:null,keepers:null}).catch(()=>{});setTimeout(()=>{if(CO.room===r)leaveNight()},3000)}else leaveNight();
+  setTimeout(()=>{
+    setMode('idle');
+    $('#endEye').textContent=dawn?'Morning watch · eight bells':quit?'You leave the lantern room':'Distress';
+    $('#endH').textContent=dawn?'Dawn':quit?'The watch is over':'The watch is lost';
+    $('#endText').textContent=(dawn?`The sky goes grey in the east. ${w.guided} ships came in on the light tonight, and the dawn is worth 60 gal of oil on its own.`
+      :quit?`You hand the lamp back to the clockwork. ${w.guided} ships came in while you kept it.`
+      :`Three hulls on the reef before morning. ${w.guided} ships still came in on the light.`)+kept;
+    tally('#endTally',[['Brought in',w.guided],['Lost on the reef',w.lost],['Oil earned',`+${w.oil} gal`],['Best night',S.st.best]]);
+    unlockNote('#endUnlock',got);openSheet('sheetEnd');
+  },dawn?1400:quit?0:2200);
+}
+function renderHulls(){if(!Wt)return;const el=$('#whHulls');el.innerHTML=[0,1,2].map(i=>`<svg class="${i<Wt.hull?'':'lost'}" viewBox="0 0 24 12" aria-hidden="true"><path d="M1 3h22l-3.5 8h-15z"/></svg>`).join('');el.setAttribute('aria-label',`${Wt.hull} of 3 hulls left`)}
+async function wake(on){try{if(on){if(!G.wake&&navigator.wakeLock)G.wake=await navigator.wakeLock.request('screen')}else{const w=G.wake;G.wake=null;await w?.release()}}catch(e){G.wake=null}}
+
+// ---------- sheets ----------
+function openSheet(id){
+  if(G.sheet)$('#'+G.sheet).hidden=true;else G.lastFocus=document.activeElement;
+  G.sheet=id;const el=$('#'+id);el.hidden=false;
+  (el.querySelector('[data-autofocus]')||el.querySelector('.row button.primary')||el.querySelector('button'))?.focus({preventScroll:true});
+}
+function closeSheet(){
+  const id=G.sheet;if(!id)return;$('#'+id).hidden=true;G.sheet=null;
+  if(id==='sheetEnd')Wt=null;
+  renderBadge();const f=G.lastFocus;if(f&&document.body.contains(f)&&!f.closest('[hidden]'))f.focus({preventScroll:true});
+}
+function tally(sel,rows){const el=$(sel);el.innerHTML='';for(const [k,v] of rows){const d=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;d.append(dt,dd);el.append(d)}}
+function unlockNote(sel,got){
+  const el=$(sel);el.hidden=!got.length;if(!got.length)return;el.innerHTML='';
+  const p=document.createElement('span');p.textContent=got.length>1?`${got.length} pages from Marr's log turned up, starting with “${PAGES[got[0]].t}”.`:`A page from Marr's log turned up: “${PAGES[got[0]].t}”.`;
+  const b=document.createElement('button');b.textContent='Read it';b.onclick=()=>{closeSheet();G.openPage=got[0];openKeep('pages')};el.append(p,b);
+}
+function openFocusSheet(){
+  const seen=new Set(),dl=$('#recentTasks');dl.innerHTML='';
+  for(const l of S.log){if(l.task&&!seen.has(l.task)&&seen.size<8){seen.add(l.task);const o=document.createElement('option');o.value=l.task;dl.append(o)}}
+  renderDur();openSheet('sheetFocus');$('#task').focus({preventScroll:true});
+}
+function renderDur(){
+  $$('#durChips button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.min===S.dur));
+  const m=S.dur,ships=focusShips(m);$('#focusEst').innerHTML=`Earns <b>${focusOil(m,true)+ships*shipOil(S.up.harbor)} gal</b> of oil and brings in ${ships} ships.`;
+}
+function openKeep(tab){if(tab)G.tab=tab;renderKeep();openSheet('sheetKeep')}
+function renderKeep(){
+  for(const t of ['lamp','log','pages']){$('#tab-'+t).setAttribute('aria-selected',t===G.tab);$('#pane-'+t).hidden=t!==G.tab}
+  if(G.tab==='lamp')renderLamp();else if(G.tab==='log')renderLog();else renderPages();
+  syncNote();renderBadge();
+}
+function renderLamp(focusKey){
+  let h=`<p class="oilline">In the store: <b>${S.oil} gal</b> of oil. Keep the lamp or stand a night watch to earn more.</p>`;
+  for(const k in UP){const u=UP[k],l=S.up[k],max=l>=u.lv.length-1,cost=u.cost[l];
+    h+=`<div class="upg"><div><h3>${u.name}</h3><div class="cur">${u.lv[l]}</div><div class="pips" aria-hidden="true">${u.lv.map((_,i)=>`<i class="${i<=l?'on':''}"></i>`).join('')}</div><p class="next">${max?'The finest there is. '+u.fx(l):`Next: ${u.lv[l+1]}. ${u.fx(l+1)}`}</p></div>${max?'<button disabled>Fitted</button>':`<button class="buy" data-up="${k}"${S.oil<cost?' disabled':''}>Fit · ${cost} gal</button>`}</div>`}
+  h+='<h4 class="sub">Comforts</h4>';
+  for(const k in COMFORT){const c=COMFORT[k];h+=`<div class="upg"><div><div class="cur">${c.name}</div><p class="next">${c.fx}</p></div>${S.cf[k]?'<button disabled>In the house</button>':`<button class="buy" data-cf="${k}"${S.oil<c.cost?' disabled':''}>Buy · ${c.cost} gal</button>`}</div>`}
+  h+=`<h4 class="sub">Light characteristic</h4><p class="note">How the lamp flashes while it keeps itself. Charts print it as the light's signature.</p><div class="chips">${CHARS.map(c=>`<button data-char="${c.id}" aria-pressed="${S.char===c.id}">${c.id}</button>`).join('')}</div><p class="note" style="margin-top:10px">${charOf().desc}</p>`;
+  const el=$('#pane-lamp');el.innerHTML=h;
+  el.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>buy('up',b.dataset.up));
+  el.querySelectorAll('[data-cf]').forEach(b=>b.onclick=()=>buy('cf',b.dataset.cf));
+  el.querySelectorAll('[data-char]').forEach(b=>b.onclick=()=>{S.char=b.dataset.char;save();tick();renderLamp('[data-char="'+b.dataset.char+'"]');renderChart()});
+  if(focusKey)el.querySelector(focusKey)?.focus({preventScroll:true});
+}
+function buy(kind,k){
+  const cost=kind==='up'?UP[k].cost[S.up[k]]:COMFORT[k].cost;if(S.oil<cost)return;
+  S.oil-=cost;if(kind==='up')S.up[k]++;else S.cf[k]=true;save();
+  bell(523.25,.12,0,2);bell(784,.08,0,2,.12);renderOil();renderChart();
+  renderLamp(kind==='up'?`[data-up="${k}"]`:null);
+  toast(kind==='up'?`${UP[k].lv[S.up[k]]} fitted.`:`${COMFORT[k].name}: done.`);
+}
+function renderLog(){
+  const st=S.st;
+  let h=`<dl class="stats">${[['Time kept',hm(st.min)],['Watches kept',st.sessions],['Day streak',streak(S.log)],['Ships brought in',st.ships],['Dawns seen',st.dawns],['Best night',st.best]].map(([a,b])=>`<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl>`;
+  h+='<h4 class="sub">Time kept, last 14 days</h4>';
+  const today=new Date(),days=[];for(let i=13;i>=0;i--){const d=new Date(today.getFullYear(),today.getMonth(),today.getDate()-i);days.push({d,min:0})}
+  const idx=Object.fromEntries(days.map((x,i)=>[dayKey(x.d),i]));for(const l of S.log){const i=idx[dayKey(new Date(l.t))];if(i!==undefined)days[i].min+=l.min}
+  const max=Math.max(...days.map(x=>x.min));
+  if(!max)h+='<p class="empty">Nothing kept in the last two weeks yet. Each watch you keep adds to today\'s bar.</p>';
+  else h+=`<div class="chartbox"><div class="bars"><div class="max"><span>${hm(max)}</span></div>${days.map((x,i)=>`<div class="cell${i===13?' today':''}" tabindex="0" data-tip="${esc(dayLabel(x.d))} · ${x.min?hm(x.min):'nothing kept'}" aria-label="${esc(dayLabel(x.d))}: ${x.min?hm(x.min):'nothing kept'}"><i style="height:${(x.min/max*100).toFixed(1)}%"></i></div>`).join('')}</div><div class="xlab" aria-hidden="true">${days.map((x,i)=>`<span>${i===13?'Today':x.d.toLocaleDateString(undefined,{weekday:'narrow'})}</span>`).join('')}</div><div class="tip" hidden></div></div>`;
+  h+='<h4 class="sub">Watches</h4>';
+  if(!S.log.length)h+='<p class="empty">No watches in the log yet. Light the lamp and your first one is written here.</p>';
+  else h+=`<ol class="loglist">${S.log.slice(0,60).map(l=>{const d=new Date(l.t);return `<li><span>${esc(dayLabel(d))} · ${clock(d)}<br>${shipTime(d).name} watch</span><span class="len${l.done?'':' ab'}">${hm(l.min)}${l.done?'':'<br>doused'}</span><span class="task">${esc(l.task||'An unnamed watch')}</span></li>`}).join('')}</ol>`;
+  const el=$('#pane-log');el.innerHTML=h;
+  const tip=el.querySelector('.tip');
+  if(tip)el.querySelectorAll('.cell').forEach(c=>{const show=()=>{tip.hidden=false;tip.textContent=c.dataset.tip;tip.style.left=clamp(c.offsetLeft+c.offsetWidth/2,60,c.parentNode.offsetWidth-60)+'px'};c.onpointerenter=show;c.onfocus=show;c.onpointerleave=c.onblur=()=>tip.hidden=true});
+}
+function renderPages(){
+  const open=openPages(),show=G.openPage??open.find(j=>!S.seen.includes(j));G.openPage=null;let h='<div class="pages">';
+  PAGES.forEach((p,i)=>{
+    if(open.includes(i))h+=`<details class="page"${i===show?' open':''}><summary><span>${p.t}</span>${S.seen.includes(i)?'':'<span class="new">New</span>'}</summary><div class="body">${p.body.map(x=>`<p>${x}</p>`).join('')}<p class="sig">${p.sig}</p></div></details>`;
+    else h+=`<div class="page locked"><span>A page missing from the log</span><span>${needText(p.need)}</span></div>`;
+  });
+  $('#pane-pages').innerHTML=h+'</div>';
+  if(open.some(i=>!S.seen.includes(i))){S.seen=open.slice();save()}
+}
+function renderOil(){$('#oilN').textContent=S.oil}
+function renderChart(){const c=charOf();$('#charText').textContent=`${c.id} 34m ${rangeNM(S.up.lens)}M`}
+function renderBadge(){const n=openPages().some(i=>!S.seen.includes(i));$('#keepBadge').hidden=!n;$('#pagesDot').hidden=!n}
+function syncNote(){$('#syncNote').textContent=saveRef?'Progress is saved to your Claude account, so it follows you between devices.':'Progress is saved in this browser.'}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),4200)}
+function updateHud(){
+  if((G.mode==='focus'||G.mode==='rest')&&S.active){
+    const ms=Math.max(0,left()),m=Math.floor(ms/60000),s=Math.floor(ms/1000)%60,v=`${m}:${pad(s)}`,el=$('#fhTime');
+    if(el.textContent!==v)el.textContent=v;$('#fhBar').style.width=(100*(1-ms/S.active.dur)).toFixed(2)+'%';
+  }
+  if(G.mode==='watch'&&Wt){
+    const gm=20*60+Math.floor(Wt.t*60/60),hh=Math.floor(gm/60)%24,mm=gm%60,b=Math.floor(Wt.t/30),bl=b%8||8;
+    const v=`${b<8?'First':b<16?'Middle':'Morning'} watch · ${bl} bell${bl>1?'s':''} · ${pad(hh)}:${pad(mm)}`,el=$('#whClock');if(el.textContent!==v)el.textContent=v;
+    const sc=`${Wt.guided} brought in`,se=$('#whScore');if(se.textContent!==sc)se.textContent=sc;
+    const hb=$('#btnHorn');hb.style.setProperty('--p',(1-Wt.hornCD/hornCD(S.up.horn)).toFixed(3));hb.classList.toggle('cooling',Wt.hornCD>0);
+  }
+}
+
+// ---------- input ----------
+function bindUI(){
+  const cv=$('#sea');
+  addEventListener('pointerdown',audioInit,true);
+  cv.addEventListener('pointerdown',e=>{if(G.mode==='watch'&&Wt&&!Wt.over){G.aim=aimFromScreen(e.clientX,e.clientY);G.keyTurn=0}});
+  cv.addEventListener('pointermove',e=>{if(G.mode==='watch'&&Wt&&!Wt.over&&(e.pointerType==='mouse'||e.buttons)){G.aim=aimFromScreen(e.clientX,e.clientY);G.keyTurn=0}});
+  addEventListener('keydown',e=>{
+    if(e.target.matches('input')){if(e.key==='Enter'&&e.target.id==='task'){e.preventDefault();$('#btnLight').click()}if(e.key!=='Escape')return}
+    audioInit();
+    if(e.key==='Escape'){if(G.sheet)closeSheet();else if(G.mode==='watch'&&Wt&&!Wt.over)endNight(false,true);return}
+    if(G.sheet)return;
+    if(e.key==='m'||e.key==='M')setMute(!muted);
+    if(G.mode!=='watch'||!Wt||Wt.over)return;
+    if(['ArrowLeft','a','A'].includes(e.key)){G.keyTurn=-1;e.preventDefault()}
+    if(['ArrowRight','d','D'].includes(e.key)){G.keyTurn=1;e.preventDefault()}
+    if([' ','f','F'].includes(e.key)){horn();e.preventDefault()}
+  });
+  addEventListener('keyup',e=>{if(['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key))G.keyTurn=0});
+  $('#btnFocus').onclick=()=>{tick();openFocusSheet()};
+  $('#btnWatch').onclick=()=>{tick();startWatch()};
+  $('#btnKeep').onclick=()=>{tick();openKeep()};
+  $('#btnSound').onclick=()=>setMute(!muted);
+  const fs=$('#btnFull');if(!document.fullscreenEnabled)fs.hidden=true;
+  fs.onclick=()=>Promise.resolve().then(()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()).catch(()=>{});
+  $$('#durChips button').forEach(b=>b.onclick=()=>{S.dur=+b.dataset.min;tick();renderDur()});
+  $('#btnLight').onclick=()=>startFocus(S.dur,$('#task').value.trim());
+  $('#btnRest').onclick=startRest;
+  $('#btnBreakWatch').onclick=startWatch;
+  $('#btnAgain').onclick=startWatch;
+  $('#btnLeave').onclick=()=>endNight(false,true);
+  $('#btnHorn').onclick=horn;
+  $$('[data-close]').forEach(b=>b.onclick=closeSheet);
+  $$('.sheet-wrap').forEach(w=>w.addEventListener('click',e=>{if(e.target===w)closeSheet()}));
+  $$('[role=tab]').forEach(b=>b.onclick=()=>{G.tab=b.id.slice(4);tick();renderKeep()});
+  addEventListener('resize',()=>{layout()});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.active){G.wake=null;wake(true);checkTimer()}});
+  setInterval(()=>{
+    checkTimer();const d=new Date(),st=shipTime(d),v=`${st.name} watch · ${st.bells} bell${st.bells>1?'s':''}`;
+    if($('#realWatch').textContent!==v)$('#realWatch').textContent=v;
+    const hh=d.getHours()*2+(d.getMinutes()>=30?1:0);if(G.lastHH>=0&&hh!==G.lastHH&&G.mode!=='watch')bells(st.bells,.12,740);G.lastHH=hh;
+  },1000);
+}
+let last=0;
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt=last?Math.min(.05,(now-last)/1000):.016;last=now;
+  update(dt);draw(dt);updateHud();
+}
+
+// ---------- self-check: open the page with #selftest ----------
+function selfTest(){
+  const ok=(c,m)=>{if(!c)throw new Error('selftest failed: '+m)};
+  ok(Math.abs(moonPhase(new Date(Date.UTC(2000,0,6,18,14))))<1e-6,'new moon reference');
+  ok(Math.abs(moonPhase(new Date(Date.UTC(2024,0,25,17,54)))-.5)<.03,'full moon, Jan 2024');
+  let st=shipTime(new Date(2026,9,22,0,15));ok(st.name==='Middle'&&st.bells===8,'00:15 is middle watch, 8 bells');
+  st=shipTime(new Date(2026,9,22,13,40));ok(st.name==='Afternoon'&&st.bells===3,'13:40 is afternoon watch, 3 bells');
+  st=shipTime(new Date(2026,9,22,18,45));ok(st.name==='Last dog','18:45 is last dog watch');
+  ok(focusOil(25,true)===110&&focusOil(25,false)===50&&focusShips(25)===10,'focus rewards');
+  const now=new Date(2026,9,22,9),day=n=>new Date(2026,9,22-n,10).getTime();
+  ok(streak([{t:day(0),done:true},{t:day(1),done:true},{t:day(3),done:true}],now)===2,'streak counting today');
+  ok(streak([{t:day(1),done:true},{t:day(2),done:true}],now)===2,'streak still alive from yesterday');
+  ok(streak([{t:day(0),done:false}],now)===0,'doused watches do not count');
+  const a=adopt({v:1,up:{lens:2},st:{min:5}});ok(a.up.lens===2&&a.up.fuel===0&&a.st.min===5&&a.st.ships===0&&Array.isArray(a.log),'adopt fills defaults');
+  ok(Math.abs(angDiff(350*D2R,10*D2R)+20*D2R)<1e-9,'angle wrap');
+  console.log('greywater selftest ok');toast('Self-test passed.');
+}
+
+// ---------- boot ----------
+function start(hot){
+  let local=null;try{local=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  if(local&&local.v===1)S=adopt(local);
+  if(hot&&hot.S&&hot.S.v===1&&(hot.S.at||0)>=(S.at||0))S=adopt(hot.S);
+  G.phase=moonPhase();G.moonIllum=(1-Math.cos(G.phase*TAU))/2;$('#moonText').textContent=moonName(G.phase);
+  layout();textures();bindUI();setMute(muted);
+  for(let i=0;i<2;i++)spawnShip({z:rnd(420,880)});
+  renderOil();renderChart();renderBadge();
+  if(S.active){if(left()<=0)finishActive(true,true);else setMode(S.active.kind)}else setMode('idle');
+  if(location.hash==='#selftest')selfTest();
+  else if(!S.at)setTimeout(()=>toast('A logbook lies open on the desk. You will find it in The keep.'),2500);
+  requestAnimationFrame(frame);connect();coInit();
+}
+const HOT=window.claude?.hot;
+HOT?.snapshot?.(()=>({S}));
+if(HOT?.ready)HOT.ready(start);else start(HOT?.data??{});
+</script>
+
+</body>
+</html>
